@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { absenteeRows, dayMonth, isFullPeriod, maxAsOf } from './absentees'
+import { absenteeRows, isFullPeriod, maxAsOf } from './absentees'
 import { friendlyDate, periodFor, periodLabel, shortDate } from './dates'
 import { downloadAbsentees, preloadPdf } from './data'
 import { usePeriodData } from './store'
@@ -21,7 +21,7 @@ export function AbsenteesScreen({ today }: { today: string }) {
     .reverse()
   const upTo = asOf < start ? start : asOf > latest ? latest : asOf
   const rows = absenteeRows(start, upTo, data.roster, data.marks)
-  const total = rows.reduce((t, r) => ({ lap: t.lap + r.lap, sick: t.sick + r.sick, cr: t.cr + r.crDates.length }), { lap: 0, sick: 0, cr: 0 })
+  const total = rows.reduce((t, r) => ({ lap: t.lap + r.lap, sick: t.sick + r.sick, cr: t.cr + r.cr }), { lap: 0, sick: 0, cr: 0 })
 
   const download = async () => {
     setWorking(true)
@@ -54,20 +54,20 @@ export function AbsenteesScreen({ today }: { today: string }) {
       <div className="abs-wrap">
         <table className="abs-table">
           <thead>
-            <tr><th className="l">Name</th><th>LAP</th><th>SICK</th><th className="l">CR dates</th></tr>
+            <tr><th className="l">Name</th><th>LAP</th><th>SICK</th><th>CR</th></tr>
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.entry.employee_id} className={r.lap || r.sick || r.crDates.length ? 'has' : ''}>
+              <tr key={r.entry.employee_id} className={r.lap || r.sick || r.cr ? 'has' : ''}>
                 <td className="l"><span className="sl">{r.entry.serial}.</span> {r.entry.full_name}</td>
                 <td>{r.lap || ''}</td>
                 <td>{r.sick || ''}</td>
-                <td className="l cr">{r.crDates.map(dayMonth).join(', ')}</td>
+                <td>{r.cr || ''}</td>
               </tr>
             ))}
           </tbody>
           <tfoot>
-            <tr><td className="l">Total</td><td>{total.lap}</td><td>{total.sick}</td><td className="l">{total.cr} day{total.cr === 1 ? '' : 's'}</td></tr>
+            <tr><td className="l">Total</td><td>{total.lap}</td><td>{total.sick}</td><td>{total.cr}</td></tr>
           </tfoot>
         </table>
       </div>

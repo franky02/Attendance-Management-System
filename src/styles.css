@@ -180,9 +180,8 @@ main { flex: 1; padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
 .abs-table th, .abs-table td { padding: 10px 6px; border-bottom: 1px solid var(--line); text-align: center; }
 .abs-table th { background: #eef1ec; font-size: 14px; }
 .abs-table .l { text-align: left; }
-.abs-table td:nth-child(2), .abs-table td:nth-child(3) { width: 48px; font-weight: 800; font-size: 17px; color: var(--err); }
-.abs-table .cr { font-size: 14px; color: var(--err); font-weight: 600; }
+.abs-table td:nth-child(n+2) { width: 56px; font-weight: 800; font-size: 17px; color: var(--err); }
 .abs-table .sl { color: var(--muted); }
 .abs-table tbody tr:not(.has) td:first-child { color: var(--muted); }
 .abs-table tfoot td { font-weight: 800; background: #f6f7f5; border-bottom: 0; }
-.abs-table tfoot td:nth-child(2), .abs-table tfoot td:nth-child(3) { color: var(--ink); }
+.abs-table tfoot td:nth-child(n+2) { color: var(--ink); }

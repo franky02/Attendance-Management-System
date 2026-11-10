@@ -1,14 +1,14 @@
 // Absentees statement PDF, matched to reference/ABSENTEES-Statement-BLANK.pdf.
 // Geometry was read from that file's drawing instructions. PDF space, origin bottom-left, points.
 import { PDFDocument, rgb, type PDFFont } from 'pdf-lib'
-import { absenteeRows, dayMonth, isFullPeriod } from './absentees'
+import { absenteeRows, isFullPeriod } from './absentees'
 import { ddmmyyyy, monthTitle, parts } from './dates'
 import { embedFonts, type FontBytes, type FontKey } from './pdf'
 import type { Marks, RosterEntry } from './types'
 
 const PAGE = [612, 792] as const // US Letter, portrait
 const RULE = 0.48
-// Left edges of the vertical rules: Sl | NAME | Des. | PF No / HRMS | LAP | SICK | CR Due date |
+// Left edges of the vertical rules: Sl | NAME | Des. | PF No / HRMS | LAP | SICK | CR |
 const V = [36.0, 62.52, 245.09, 280.49, 366.91, 426.43, 491.38, 575.62]
 const RIGHT = V[7] + RULE
 // Bottom edges of the horizontal rules: table top, below heading, then below each of the 16 rows.
@@ -74,7 +74,7 @@ export async function buildAbsenteesPdf(input: AbsenteesInput): Promise<Uint8Arr
   // Headings
   text('Sl.', 42.72, 691.42, f.arialBold, 11.04)
   text('NAME', 68.16, 691.06, f.arialBold, 12)
-  const heads = ['Des.', 'PF No / HRMS', 'LAP', 'SICK', 'CR Due date']
+  const heads = ['Des.', 'PF No / HRMS', 'LAP', 'SICK', 'CR']
   heads.forEach((h, i) => centred(h, V[i + 2], V[i + 3], 691.42, f.arialBold, 11.04))
 
   // Rows
@@ -92,50 +92,13 @@ export async function buildAbsenteesPdf(input: AbsenteesInput): Promise<Uint8Arr
     centred(r.entry.code, V[3], V[4], top - 28.68 * k, f.bookmanBold, 9.96)
     if (r.lap) centred(String(r.lap), V[4], V[5], base, f.arialBold, 12)
     if (r.sick) centred(String(r.sick), V[5], V[6], base, f.arialBold, 12)
-    if (r.crDates.length) drawDates(r.crDates.map(dayMonth), V[6], V[7], top, top - (rowTops[i] - rowTops[i + 1]))
+    if (r.cr) centred(String(r.cr), V[6], V[7], base, f.arialBold, 12)
   })
 
   // Declaration
   DECLARATION.forEach((line, i) => text(line, 36.0, 97.44 - i * 15.72, f.calibriBold, 12))
 
   return doc.save()
-
-  /** CR dates, e.g. "18/10, 25/10", wrapped and shrunk to fit inside the cell. */
-  function drawDates(items: string[], l: number, r: number, top: number, bottom: number) {
-    const width = r - l - 6
-    const height = top - bottom - 4
-    for (const size of [11, 10, 9, 8, 7]) {
-      const lines = wrapItems(items, f.narrowBold, size, width)
-      const lead = size * 1.15
-      if (lines.length * lead <= height) {
-        const first = (top + bottom) / 2 + ((lines.length - 1) * lead) / 2 - size * 0.35
-        lines.forEach((line, i) => centred(line, l, r, first - i * lead, f.narrowBold, size))
-        return
-      }
-    }
-    // Very many dates: as many as fit on three lines, then "+N more".
-    for (let k = items.length - 1; k > 0; k--) {
-      const lines = wrapItems(items.slice(0, k), f.narrowBold, 7, width)
-      lines[lines.length - 1] = `${lines[lines.length - 1]} +${items.length - k} more`
-      if (lines.length <= 3 && lines.every((l) => f.narrowBold.widthOfTextAtSize(l, 7) <= width)) {
-        const first = (top + bottom) / 2 + 8 - 7 * 0.35
-        lines.forEach((line, i) => centred(line, l, r, first - i * 8, f.narrowBold, 7))
-        return
-      }
-    }
-  }
-}
-
-function wrapItems(items: string[], font: PDFFont, size: number, width: number): string[] {
-  const lines: string[] = []
-  let line = ''
-  for (const it of items) {
-    const next = line ? `${line}, ${it}` : it
-    if (!line || font.widthOfTextAtSize(next, size) <= width) line = next
-    else { lines.push(line + ','); line = it }
-  }
-  if (line) lines.push(line)
-  return lines
 }
 
 export function absenteesFileName(periodStart: string, asOf: string): string {

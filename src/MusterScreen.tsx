@@ -119,7 +119,7 @@ export function MusterScreen({ today }: { today: string }) {
           <tbody>
             {roster.map((r) => (
               <tr key={r.employee_id}>
-                <td className="sticky c-sl">{r.serial}</td>
+                <td className="sticky c-sl">{r.serial}.</td>
                 <td className="sticky c-name">{r.full_name}</td>
                 <td>{r.designation}</td>
                 <td className="pf">{r.pf_hrms_number}<br /><small>{r.code}</small></td>

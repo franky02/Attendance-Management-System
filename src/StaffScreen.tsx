@@ -93,7 +93,7 @@ export function StaffScreen({ today }: { today: string }) {
         {active.map((s, i) => (
           <div key={s.id} className="staff-row">
             <div className="who" onClick={() => setEdit(s)}>
-              <div className="name"><span className="sl">{i + 1}</span>{s.full_name}</div>
+              <div className="name">{i + 1}. {s.full_name}</div>
               <div className="muted">{s.designation} · {s.pf_hrms_number} · {s.code}</div>
             </div>
             <div className="staff-btns">

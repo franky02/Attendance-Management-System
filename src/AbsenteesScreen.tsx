@@ -59,7 +59,7 @@ export function AbsenteesScreen({ today }: { today: string }) {
           <tbody>
             {rows.map((r) => (
               <tr key={r.entry.employee_id} className={r.lap || r.sick || r.cr ? 'has' : ''}>
-                <td className="l"><span className="sl">{r.entry.serial}</span>{r.entry.full_name}</td>
+                <td className="l"><span className="sl">{r.entry.serial}.</span> {r.entry.full_name}</td>
                 <td>{r.lap ? <span className="n">{r.lap}</span> : ''}</td>
                 <td>{r.sick ? <span className="n">{r.sick}</span> : ''}</td>
                 <td>{r.cr ? <span className="n">{r.cr}</span> : ''}</td>
@@ -67,7 +67,7 @@ export function AbsenteesScreen({ today }: { today: string }) {
             ))}
           </tbody>
           <tfoot>
-            <tr><td className="l"><em>Total</em></td><td>{total.lap}</td><td>{total.sick}</td><td>{total.cr}</td></tr>
+            <tr><td className="l">Total</td><td>{total.lap}</td><td>{total.sick}</td><td>{total.cr}</td></tr>
           </tfoot>
         </table>
       </div>

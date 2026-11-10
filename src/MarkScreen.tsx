@@ -63,7 +63,7 @@ export function MarkScreen({ today }: { today: string }) {
         <button className="arrow" aria-label="Previous day" onClick={() => setDate(addDays(date, -1))}>‹</button>
         <div className="date-mid">
           <div className="eyebrow">Period {periodLabel(start)}</div>
-          <div className="date-big"><DateText date={date} />{date === today && <span className="today-tag">Today</span>}</div>
+          <div className="date-big">{friendlyDate(date)}{date === today && <span className="today-tag">Today</span>}</div>
         </div>
         <button className="arrow" aria-label="Next day" disabled={date >= today} onClick={() => setDate(addDays(date, 1))}>›</button>
       </div>
@@ -86,8 +86,8 @@ export function MarkScreen({ today }: { today: string }) {
             <div key={r.employee_id} className={'mark-row' + (cur ? '' : ' blank')}>
               <span className="dot" style={cur ? { '--c': statusColor(cur) } as React.CSSProperties : undefined} aria-hidden="true" />
               <div className="who">
-                <div className="name">{r.full_name}</div>
-                <div className="muted"><span className="sl">{r.serial}</span>{r.designation}</div>
+                <div className="name">{r.serial}. {r.full_name}</div>
+                <div className="muted">{r.designation}</div>
               </div>
               <div className="codes">
                 <button
@@ -138,19 +138,13 @@ export function MarkScreen({ today }: { today: string }) {
         {showUndo ? (
           <button className="big-btn secondary" onClick={doUndo}>Undo ({undo.ids.length} marked Present)</button>
         ) : (
-          <button className="big-btn blue" disabled={unmarked === 0 || !roster.length} onClick={markRemaining}>
+          <button className="big-btn" disabled={unmarked === 0 || !roster.length} onClick={markRemaining}>
             Mark remaining Present ({unmarked})
           </button>
         )}
       </div>
     </div>
   )
-}
-
-/** "Tue, 10 Nov 2026" with the weekday set apart in the italic face. */
-function DateText({ date }: { date: string }) {
-  const [wd, rest] = friendlyDate(date).split(', ')
-  return <><em>{wd}</em> {rest}</>
 }
 
 function ReadyBanner({ periods, today }: { periods: PeriodRow[]; today: string }) {

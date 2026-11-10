@@ -85,12 +85,6 @@ export function MusterScreen({ today }: { today: string }) {
         </select>
       </label>
 
-      <div className="legend">
-        {['P', 'R', 'A'].map((c) => <span key={c}><b style={{ color: statusColor(c) }}>{c}</b> {statusOf(c)!.label.replace(' (no leave type)', '')}</span>)}
-        <span><b style={{ color: statusColor('CL') }}>CL…</b> Leave type</span>
-        <span>Tap a box to change it</span>
-      </div>
-
       {ended && (
         <div className="ended-bar">
           {locked

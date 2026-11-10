@@ -49,7 +49,7 @@ function Main() {
   return (
     <div className="app">
       <header className="top">
-        <div className="title">ENNORE Muster</div>
+        <div className="title"><AppName /></div>
         <div className={'save-state ' + save.state}>
           {save.state === 'saving' && 'Saving…'}
           {save.state === 'saved' && '✓ Saved'}
@@ -75,6 +75,11 @@ function Main() {
   )
 }
 
+/** The app's name: Playfair Display, with "Ennore" in a Didone italic (fonts in public/fonts). */
+function AppName() {
+  return <>Muster Roll for <em>Ennore</em> Station</>
+}
+
 function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -91,8 +96,7 @@ function Login() {
 
   return (
     <form className="login" onSubmit={submit}>
-      <div className="eyebrow">Station attendance</div>
-      <h1>ENNORE Muster</h1>
+      <h1 className="title-big"><AppName /></h1>
       <div className="login-card">
       <label className="field"><span>Email</span><input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
       <label className="field"><span>Password</span><input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></label>

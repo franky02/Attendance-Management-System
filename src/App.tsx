@@ -5,9 +5,10 @@ import { todayIST } from './dates'
 import { MarkScreen } from './MarkScreen'
 import { MusterScreen } from './MusterScreen'
 import { StaffScreen } from './StaffScreen'
+import { AbsenteesScreen } from './AbsenteesScreen'
 import { useSaveState } from './saver'
 
-type Tab = 'mark' | 'muster' | 'staff'
+type Tab = 'mark' | 'muster' | 'absentees' | 'staff'
 
 export function App() {
   const [session, setSession] = useState<Session | null | undefined>(supabase ? undefined : null)
@@ -51,13 +52,12 @@ function Main() {
       <main>
         {tab === 'mark' && <MarkScreen today={today} />}
         {tab === 'muster' && <MusterScreen today={today} />}
+        {tab === 'absentees' && <AbsenteesScreen today={today} />}
         {tab === 'staff' && <StaffScreen today={today} />}
       </main>
       <nav className="tabs">
-        {(['mark', 'muster', 'staff'] as Tab[]).map((t) => (
-          <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>
-            {t === 'mark' ? 'Mark' : t === 'muster' ? 'Muster' : 'Staff'}
-          </button>
+        {([['mark', 'Mark'], ['muster', 'Muster'], ['absentees', 'Absentees'], ['staff', 'Staff']] as [Tab, string][]).map(([t, label]) => (
+          <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{label}</button>
         ))}
       </nav>
     </div>

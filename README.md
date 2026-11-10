@@ -68,6 +68,16 @@ To add a leave type, add one line to `LEAVE_TYPES` in `src/statusCodes.ts`, for 
 
 Nothing changes in the database: the code is stored as text.
 
+## Absentees statement
+
+The **Absentees** tab totals three kinds of absence for one period, from the 16th up to the date chosen in "Count up to" (which defaults to today, or to the 15th for an ended period):
+
+- **LAP:** the number of days marked `LAP`
+- **SICK:** the number of days marked `S`
+- **CR Due date:** the dates marked `CR`, written as `18/10, 25/10`
+
+The tab shows the totals on screen. **Download absentees statement** makes a one-page US Letter PDF that matches `reference/ABSENTEES-Statement-BLANK.pdf` (`src/absenteesPdf.ts`). If the count stops before the period ends, the PDF is marked "INTERIM: recorded up to …". The codes behind each column are set in `ABSENTEE_COLUMNS` in `src/absentees.ts`.
+
 ## How it behaves
 
 - **Mark:** one tap saves, and tapping the selected code again clears it. "Mark remaining Present" fills only blank cells. Its Undo, shown for 10 seconds, removes only the cells it filled. Rest days: tap **R** first, then use "Mark remaining Present".

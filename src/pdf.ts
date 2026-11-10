@@ -38,14 +38,50 @@ export const FONT_FILES = {
   bookmanBold: 'texgyrebonum-bold.otf',
   clarendonBold: 'Besley-Bold.ttf',
   arialBlack: 'ArchivoBlack-Regular.ttf',
+  // Absentees statement only
+  calibriItalic: 'Carlito-Italic.ttf',
+  arial: 'LiberationSans-Regular.ttf',
+  arialBold: 'LiberationSans-Bold.ttf',
 } as const
-export type FontBytes = Record<keyof typeof FONT_FILES, ArrayBuffer | Uint8Array>
+export type FontKey = keyof typeof FONT_FILES
+export type FontBytes = Partial<Record<FontKey, ArrayBuffer | Uint8Array>>
+export type Fonts = Record<FontKey, PDFFont>
 
-export async function loadFontsBrowser(base = '/fonts/'): Promise<FontBytes> {
-  const entries = await Promise.all(
-    Object.entries(FONT_FILES).map(async ([k, f]) => [k, await (await fetch(base + f)).arrayBuffer()] as const),
-  )
-  return Object.fromEntries(entries) as FontBytes
+export const MUSTER_FONTS: FontKey[] = ['calibri', 'calibriBold', 'calibriBoldItalic', 'narrowBold', 'bookmanBold', 'clarendonBold', 'arialBlack']
+
+// Each font file is fetched once per app session (and the browser caches it for good).
+const fetched = new Map<FontKey, Promise<ArrayBuffer>>()
+export async function loadFontsBrowser(keys: FontKey[], base = '/fonts/'): Promise<FontBytes> {
+  const entries = await Promise.all(keys.map(async (k) => {
+    let p = fetched.get(k)
+    if (!p) {
+      p = fetch(base + FONT_FILES[k]).then((r) => { if (!r.ok) throw new Error('font ' + k); return r.arrayBuffer() })
+      p.catch(() => fetched.delete(k))
+      fetched.set(k, p)
+    }
+    return [k, await p] as const
+  }))
+  return Object.fromEntries(entries)
+}
+
+/** Embeds only the fonts a document uses. */
+export async function embedFonts(doc: PDFDocument, bytes: FontBytes, keys: FontKey[]): Promise<Fonts> {
+  doc.registerFontkit(fontkit)
+  const f = {} as Fonts
+  for (const k of keys) {
+    const b = bytes[k]
+    if (!b) throw new Error('Missing font ' + k)
+    // pdf-lib's subsetter drops glyphs from Carlito and the OTF Bookman substitute, so those embed whole.
+    const whole = k === 'bookmanBold' || k.startsWith('calibri')
+    // Ligatures (Carlito's "ti") break pdf-lib's spacing, so they are off.
+    f[k] = await doc.embedFont(b, { subset: !whole, features: { liga: false, clig: false, dlig: false, calt: false } })
+  }
+  return f
+}
+
+export function rgbHex(c: string) {
+  const n = parseInt(c.slice(1), 16)
+  return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255)
 }
 
 export interface MusterInput {
@@ -58,24 +94,11 @@ export interface MusterInput {
   fonts: FontBytes
 }
 
-function hex(c: string) {
-  const n = parseInt(c.slice(1), 16)
-  return rgb(((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255)
-}
+const hex = rgbHex
 
 export async function buildMusterPdf(input: MusterInput): Promise<Uint8Array> {
   const doc = await PDFDocument.create()
-  doc.registerFontkit(fontkit)
-  const f: Record<keyof typeof FONT_FILES, PDFFont> = {} as never
-  for (const k of Object.keys(FONT_FILES) as (keyof typeof FONT_FILES)[]) {
-    // pdf-lib's subsetter drops glyphs from Carlito and the OTF Bookman substitute, so those embed whole.
-    const whole = k === 'bookmanBold' || k.startsWith('calibri')
-    // Ligatures (Carlito's "ti") break pdf-lib's spacing, so they are off.
-    f[k] = await doc.embedFont(input.fonts[k], {
-      subset: !whole,
-      features: { liga: false, clig: false, dlig: false, calt: false },
-    })
-  }
+  const f = await embedFonts(doc, input.fonts, MUSTER_FONTS)
   doc.setTitle(`Muster Roll ENNORE ${monthTitle(input.periodStart)}`)
   const page = doc.addPage([...PAGE])
 

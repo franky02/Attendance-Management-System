@@ -42,11 +42,11 @@ main { flex: 1; padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
 
 .tabs {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
-  display: grid; grid-template-columns: repeat(3, 1fr);
+  display: grid; grid-template-columns: repeat(4, 1fr);
   background: var(--card); border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom);
 }
-.tabs button { min-height: 60px; border: 0; background: none; font-size: 18px; font-weight: 600; color: var(--muted); }
+.tabs button { min-height: 60px; border: 0; background: none; font-size: 16px; padding: 0 2px; font-weight: 600; color: var(--muted); }
 .tabs button.on { color: var(--brand); box-shadow: inset 0 4px 0 var(--brand); }
 
 /* Mark */
@@ -173,3 +173,16 @@ main { flex: 1; padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
 .sheet-opt.clear .opt-label { color: var(--muted); }
 @keyframes rise { from { transform: translateY(40px); opacity: 0.6; } to { transform: none; opacity: 1; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* Absentees */
+.abs-wrap { background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin: 8px 0 4px; }
+.abs-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.abs-table th, .abs-table td { padding: 10px 6px; border-bottom: 1px solid var(--line); text-align: center; }
+.abs-table th { background: #eef1ec; font-size: 14px; }
+.abs-table .l { text-align: left; }
+.abs-table td:nth-child(2), .abs-table td:nth-child(3) { width: 48px; font-weight: 800; font-size: 17px; color: var(--err); }
+.abs-table .cr { font-size: 14px; color: var(--err); font-weight: 600; }
+.abs-table .sl { color: var(--muted); }
+.abs-table tbody tr:not(.has) td:first-child { color: var(--muted); }
+.abs-table tfoot td { font-weight: 800; background: #f6f7f5; border-bottom: 0; }
+.abs-table tfoot td:nth-child(2), .abs-table tfoot td:nth-child(3) { color: var(--ink); }

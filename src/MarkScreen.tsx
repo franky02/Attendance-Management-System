@@ -3,7 +3,7 @@ import { addDays, friendlyDate, periodFor, periodLabel, shiftPeriod } from './da
 import { countUnmarked, downloadFinal, preloadPdf } from './data'
 import { saveMark } from './saver'
 import { CodePicker } from './CodePicker'
-import { ABSENT_CODES, kindOf, statusOf, type Kind } from './statusCodes'
+import { ABSENT_CODES, kindOf, statusColor, statusOf, type Kind } from './statusCodes'
 import { loadPeriod, refreshMeta, useStore, usePeriodData } from './store'
 import { key, type PeriodRow } from './types'
 
@@ -47,7 +47,7 @@ export function MarkScreen({ today }: { today: string }) {
     setUndo(null)
   }
 
-  const COUNT_LABELS: [Kind, string, string][] = [['present', 'Present', statusOf('P')!.color], ['absent', 'Leave/Absent', statusOf('A')!.color], ['rest', 'Rest', statusOf('R')!.color]]
+  const COUNT_LABELS: [Kind, string, string][] = [['present', 'Present', statusOf('P')!.color], ['absent', 'Absent', statusOf('A')!.color], ['rest', 'Rest', statusOf('R')!.color]]
   const counts = COUNT_LABELS.map(([kind, label, color]) => ({
     code: kind, label, color,
     n: roster.filter((r) => { const m = marks[key(r.employee_id, date)]; return m && kindOf(m) === kind }).length,
@@ -62,8 +62,8 @@ export function MarkScreen({ today }: { today: string }) {
       <div className="date-nav">
         <button className="arrow" aria-label="Previous day" onClick={() => setDate(addDays(date, -1))}>‹</button>
         <div className="date-mid">
+          <div className="eyebrow">Period {periodLabel(start)}</div>
           <div className="date-big">{friendlyDate(date)}{date === today && <span className="today-tag">Today</span>}</div>
-          <div className="muted">Period {periodLabel(start)}</div>
         </div>
         <button className="arrow" aria-label="Next day" disabled={date >= today} onClick={() => setDate(addDays(date, 1))}>›</button>
       </div>
@@ -71,9 +71,9 @@ export function MarkScreen({ today }: { today: string }) {
 
       <div className="counts">
         {counts.map((c) => (
-          <span key={c.code} className="count" style={{ color: c.color }}>{c.label} <b>{c.n}</b></span>
+          <div key={c.code} className="count" style={{ '--c': c.color } as React.CSSProperties}><span>{c.label}</span><b>{c.n}</b></div>
         ))}
-        <span className="count">Unmarked <b>{unmarked}</b></span>
+        <div className="count"><span>To mark</span><b>{unmarked}</b></div>
       </div>
 
       {data.error && <div className="error-box">Could not load: {data.error} <button onClick={data.reload}>Retry</button></div>}
@@ -84,6 +84,7 @@ export function MarkScreen({ today }: { today: string }) {
           const cur = marks[key(r.employee_id, date)]
           return (
             <div key={r.employee_id} className={'mark-row' + (cur ? '' : ' blank')}>
+              <span className="dot" style={cur ? { '--c': statusColor(cur) } as React.CSSProperties : undefined} aria-hidden="true" />
               <div className="who">
                 <div className="name">{r.serial}. {r.full_name}</div>
                 <div className="muted">{r.designation}</div>
@@ -137,7 +138,7 @@ export function MarkScreen({ today }: { today: string }) {
         {showUndo ? (
           <button className="big-btn secondary" onClick={doUndo}>Undo ({undo.ids.length} marked Present)</button>
         ) : (
-          <button className="big-btn" disabled={unmarked === 0 || !roster.length} onClick={markRemaining}>
+          <button className="big-btn blue" disabled={unmarked === 0 || !roster.length} onClick={markRemaining}>
             Mark remaining Present ({unmarked})
           </button>
         )}

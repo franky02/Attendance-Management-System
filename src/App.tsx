@@ -10,6 +10,14 @@ import { useSaveState } from './saver'
 
 type Tab = 'mark' | 'muster' | 'absentees' | 'staff'
 
+// Line icons for the bottom tab bar (drawn here, no icon library).
+const TAB_ICONS: Record<Tab, React.ReactNode> = {
+  mark: <><circle cx="12" cy="12" r="8.5" /><path d="M8.2 12.4l2.6 2.6 5-5.2" /></>,
+  muster: <><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d="M3.5 9.5h17M9.5 9.5v10M15 9.5v10" /></>,
+  absentees: <><rect x="3.5" y="5" width="17" height="15" rx="2.5" /><path d="M3.5 10h17M8 3v4M16 3v4M9.5 15h5" /></>,
+  staff: <><circle cx="9.5" cy="8.5" r="3.3" /><path d="M3.5 19.5c.6-3.2 3-5 6-5s5.4 1.8 6 5M15.6 5.4a3.2 3.2 0 0 1 0 6.2M17.4 14.8c1.7.6 2.8 2.2 3.1 4.7" /></>,
+}
+
 export function App() {
   const [session, setSession] = useState<Session | null | undefined>(supabase ? undefined : null)
 
@@ -57,7 +65,10 @@ function Main() {
       </main>
       <nav className="tabs">
         {([['mark', 'Mark'], ['muster', 'Muster'], ['absentees', 'Absentees'], ['staff', 'Staff']] as [Tab, string][]).map(([t, label]) => (
-          <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{label}</button>
+          <button key={t} className={tab === t ? 'on' : ''} aria-current={tab === t ? 'page' : undefined} onClick={() => setTab(t)}>
+            <svg viewBox="0 0 24 24" aria-hidden="true">{TAB_ICONS[t]}</svg>
+            {label}
+          </button>
         ))}
       </nav>
     </div>
@@ -80,9 +91,12 @@ function Login() {
 
   return (
     <form className="login" onSubmit={submit}>
+      <div className="eyebrow">Station attendance</div>
       <h1>ENNORE Muster</h1>
+      <div className="login-card">
       <label className="field"><span>Email</span><input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
       <label className="field"><span>Password</span><input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></label>
+      </div>
       {error && <div className="error-box">{error}</div>}
       <button className="big-btn" disabled={busy || !email || !password}>{busy ? 'Signing in…' : 'Sign in'}</button>
     </form>

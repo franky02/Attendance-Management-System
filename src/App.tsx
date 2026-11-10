@@ -75,7 +75,7 @@ function Main() {
   )
 }
 
-/** The app's name: Playfair Display, with "Ennore" in a Didone italic (fonts in public/fonts). */
+/** The app's name, with "Ennore" in the italic accent face. */
 function AppName() {
   return <>Muster Roll for <em>Ennore</em> Station</>
 }

@@ -8,6 +8,9 @@ import { CodePicker } from './CodePicker'
 import { STATUS_CODES, statusColor, statusOf } from './statusCodes'
 import { key } from './types'
 
+const weekday = (date: string) => new Date(date + 'T00:00:00Z').getUTCDay()
+const isSunday = (date: string) => weekday(date) === 0
+const weekdayLetter = (date: string) => ['Su', 'M', 'T', 'W', 'Th', 'F', 'Sa'][weekday(date)]
 
 export function MusterScreen({ today }: { today: string }) {
   const current = periodFor(today).start
@@ -107,19 +110,21 @@ export function MusterScreen({ today }: { today: string }) {
               <th>Des.</th>
               <th>PF / HRMS</th>
               {cols.map((c, i) => (
-                <th key={i} data-date={c.date ?? undefined} className={'day' + (i === 16 ? ' divider' : '') + (c.date === today ? ' today' : '')}>{c.label}</th>
+                <th key={i} data-date={c.date ?? undefined} className={'day' + (i === 16 ? ' divider' : '') + (c.date === today ? ' today' : '') + (c.date && isSunday(c.date) ? ' sun' : '')}>
+                  {c.label}{c.date && <small>{weekdayLetter(c.date)}</small>}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {roster.map((r) => (
               <tr key={r.employee_id}>
-                <td className="sticky c-sl">{r.serial}.</td>
+                <td className="sticky c-sl">{r.serial}</td>
                 <td className="sticky c-name">{r.full_name}</td>
                 <td>{r.designation}</td>
                 <td className="pf">{r.pf_hrms_number}<br /><small>{r.code}</small></td>
                 {cols.map((c, i) => {
-                  const cls = 'cell' + (i === 16 ? ' divider' : '')
+                  const cls = 'cell' + (i === 16 ? ' divider' : '') + (c.date === today ? ' today-col' : '') + (c.date && isSunday(c.date) ? ' sun' : '')
                   if (!c.date) return <td key={i} className={cls + ' nodate'} />
                   const s = marks[key(r.employee_id, c.date)]
                   const future = c.date > today
@@ -127,10 +132,10 @@ export function MusterScreen({ today }: { today: string }) {
                     <td
                       key={i}
                       className={cls + (future ? ' future' : '') + (locked ? ' locked' : '') + (s && s.length > 1 ? ` len${Math.min(s.length, 4)}` : '')}
-                      style={s ? { color: statusColor(s) } : undefined}
+                      style={s ? { '--c': statusColor(s) } as React.CSSProperties : undefined}
                       title={s ? statusOf(s)?.label : undefined}
                       onClick={() => tapCell(r.employee_id, r.full_name, c.date!)}
-                    >{s ?? ''}</td>
+                    >{s ? <span className="chip">{s}</span> : ''}</td>
                   )
                 })}
               </tr>

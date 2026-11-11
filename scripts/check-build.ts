@@ -1,4 +1,5 @@
-// Fails the build if a real (Supabase) build contains any staff details.
+// Fails the build if a real (Supabase) build contains demo mode's staff list,
+// i.e. checks that demo mode (src/demoDb.ts) was left out of the public files.
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { loadEnv } from 'vite'

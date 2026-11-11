@@ -8,7 +8,9 @@ A small attendance app for one user. Mark daily attendance for the station staff
 - **Screens:** Mark (opens first), Muster (grid and PDFs), Staff (staff list and backup).
 - **Stack:** React, TypeScript, Vite, Supabase, pdf-lib in the browser, Cloudflare Pages.
 
-This repository contains staff PF/HRMS details. **Keep it private.**
+**Privacy:** this repository holds no real staff details. Demo mode uses 16 made-up sample staff (`src/seed.ts`), and the real list lives only in the database.
+
+The official paper forms the PDFs are matched to (`reference/*.pdf`) aren't included either, because they carry staff names. The owner keeps them locally, and git ignores them. The PDF layouts in `src/*Pdf.ts` already contain every measurement taken from them.
 
 ## Try it locally (demo mode)
 
@@ -31,7 +33,7 @@ npm run build
 
 1. **Supabase project:** create it in **Mumbai (ap-south-1)** on the free tier.
 2. **Database:** in the SQL editor, open `supabase/migrations/0001_schema.sql`. Replace `OWNER_EMAIL@example.com` with the login email, then run it.
-3. **Staff data:** check that hosting staff PF/HRMS data on Supabase is permitted. Then run `supabase/seed.sql`.
+3. **Staff data:** check that hosting staff PF/HRMS data on Supabase is permitted. Copy `supabase/seed.example.sql` to `supabase/seed.sql` (git ignores it), put in the real staff exactly as printed, and run it.
 4. **Login:** go to Authentication → Sign In / Providers. Turn **off** "Allow new users to sign up". Then go to Authentication → Users → Add user and create the one account, using the same email as in step 2.
 5. **App settings:** copy `.env.example` to `.env` and fill in `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from Project Settings → API.
 6. **Hosting on Cloudflare (free):** the app is served as static files by a Cloudflare Worker. Its config is in `wrangler.jsonc`.

@@ -1,5 +1,6 @@
-// Staff exactly as printed on the reference muster. Do not correct or reformat.
-// Record 15 contains the letter O, not a zero.
+// Sample staff for demo mode only: made-up names and numbers.
+// The real staff list lives only in the database (load it with your own supabase/seed.sql).
+// The odd PF formats (a space, letters, an O instead of a zero) are kept on purpose to exercise the PDF layout.
 export const SEED_STAFF: [string, string, string, string][] = [
   ['ARUN PRAKASH', 'SS', '10000000001', 'DEMOAA'],
   ['B. SURESH BABU', 'SS', '10000DEMO02', 'DEMOAB'],

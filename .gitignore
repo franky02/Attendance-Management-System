@@ -12,3 +12,7 @@ out
 
 # macOS
 .DS_Store
+
+# Private: real staff details and the official paper forms stay on this Mac only
+reference/*.pdf
+supabase/seed.sql

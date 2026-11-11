@@ -141,7 +141,7 @@ export function MarkScreen({ today }: { today: string }) {
         {showUndo ? (
           <button className="big-btn secondary" onClick={doUndo}>Undo ({undo.ids.length} marked Present)</button>
         ) : (
-          <button className="big-btn" disabled={unmarked === 0 || !roster.length} onClick={markRemaining}>
+          <button data-fb="success" className="big-btn" disabled={unmarked === 0 || !roster.length} onClick={markRemaining}>
             Mark remaining Present ({unmarked})
           </button>
         )}

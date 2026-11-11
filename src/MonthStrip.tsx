@@ -31,7 +31,7 @@ export function MonthStrip({ months, value, onChange }: { months: string[]; valu
       {months.map((m) => {
         const [mon, yr] = monthChip(m)
         return (
-          <button key={m} data-month={m} role="radio" aria-checked={m === value} className={'month-chip' + (m === value ? ' on' : '')} onClick={() => onChange(m)}>
+          <button key={m} data-fb="tick" data-month={m} role="radio" aria-checked={m === value} className={'month-chip' + (m === value ? ' on' : '')} onClick={() => onChange(m)}>
             <b>{mon}</b><small>{yr}</small>
           </button>
         )

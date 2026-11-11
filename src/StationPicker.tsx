@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { STATIONS, stationByCode } from './stations'
+import { feedback } from './feedback'
 
 const ROW = 52 // px per row
 const VISIBLE = 5 // rows shown
@@ -44,10 +45,14 @@ export function StationSheet({ value, onPick, onClose, confirmLabel = 'Select' }
     wheel.current?.scrollTo({ top: j * ROW, behavior: 'smooth' })
   }
 
+  const lastTick = useRef(index)
   const onScroll = () => {
     const top = wheel.current?.scrollTop ?? 0
     setScroll(top)
-    setIndex(Math.max(0, Math.min(STATIONS.length - 1, Math.round(top / ROW))))
+    const i = Math.max(0, Math.min(STATIONS.length - 1, Math.round(top / ROW)))
+    // One tick each time a new station passes the centre band, like a phone's date picker.
+    if (i !== lastTick.current) { lastTick.current = i; feedback('tick') }
+    setIndex(i)
   }
 
   const chosen = STATIONS[index]

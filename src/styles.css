@@ -366,3 +366,16 @@ main { flex: 1; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 .wheel-row.on .wr-code { color: var(--brand); }
 .station-actions { padding: 4px 16px 12px; }
 .switching { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(255, 255, 255, 0.85); font-weight: 600; color: var(--brand-ink); }
+
+/* Sound & vibration switches (Staff tab) */
+.fb-box { background: var(--card); border-radius: var(--radius); overflow: hidden; }
+.fb-switch { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 10px 14px; border: 0; background: none; text-align: left; }
+.fb-switch + .fb-switch { border-top: 1px solid var(--hair); }
+.fb-text { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.fb-text b { font-weight: 600; font-size: 15px; }
+.fb-text small { color: var(--muted); font-size: 12px; }
+.fb-knob { flex: none; width: 48px; height: 28px; border-radius: 999px; background: #d4d1db; position: relative; transition: background 150ms; }
+.fb-knob::after { content: ''; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.25); transition: transform 150ms; }
+.fb-switch.on .fb-knob { background: var(--brand); }
+.fb-switch.on .fb-knob::after { transform: translateX(20px); }
+.fb-switch:active { transform: none; }

@@ -1,4 +1,7 @@
+import { feedback } from './feedback'
+
 export function downloadBytes(bytes: Uint8Array | string, name: string, type: string) {
+  feedback('success')
   const blob = new Blob([bytes as BlobPart], { type })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')

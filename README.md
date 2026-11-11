@@ -128,6 +128,18 @@ Dad can work at any of the 19 stations in `src/stations.ts`: MGR Chennai Central
 - **Title and PDFs:** both use the chosen station: "Attendance Management System for Ponneri Station", "Muster Roll of PONNERI Station Staffs …", and file names like `Muster-PONNERI-2026-10-Final.pdf`. Long names shrink to fit the title line.
 - **Database:** `supabase/migrations/0005_stations.sql`. Everything entered before stations existed belongs to Ennore (ENR).
 
+## Sound and vibration
+
+Buttons and selecting scrollers give gentle feedback (`src/feedback.ts`). The sounds are made by the phone itself (Web Audio), so there are no audio files, and vibration uses `navigator.vibrate` (Android; iPhones ignore it).
+
+- **Tap:** every button (one listener on the page) and opening a Muster cell get a soft click and an 8 ms pulse.
+- **Tick:** tabs, month chips, and each station passing the centre of the station wheel get a lighter tick. Ticks closer than 35 ms apart merge, so a fast flick never buzzes.
+- **Success:** "Mark remaining Present" and any download get a two-note chime and a double pulse.
+- **Warn:** a failed sign-in gets a low double tone, and so does saving when it first starts failing (once, not on every retry).
+- **Silent:** plain scrolling (the Muster grid, lists), locked cells, and anything while the app is in the background.
+
+**Staff → Sound & vibration** turns each one on or off for this phone. A button can choose its kind with `data-fb="tick" | "success" | "warn"`, or opt out with `data-fb="off"`.
+
 ## How it behaves
 
 - **Mark:** one tap saves, and tapping the selected code again clears it. "Mark remaining Present" fills only blank cells. Its Undo, shown for 10 seconds, removes only the cells it filled. Rest days: tap **R** first, then use "Mark remaining Present".

@@ -5,6 +5,7 @@ import { countUnmarked, downloadFinal, downloadInterim, preloadPdf } from './dat
 import { usePeriodData } from './store'
 import { saveMark } from './saver'
 import { CodePicker } from './CodePicker'
+import { feedback } from './feedback'
 import { useHolidays } from './holidays'
 import { STATUS_CODES, statusColor, statusOf } from './statusCodes'
 import { key } from './types'
@@ -51,6 +52,7 @@ export function MusterScreen({ today }: { today: string }) {
   // With many leave types, a tap opens the list of codes rather than cycling through them.
   const tapCell = (employeeId: string, name: string, date: string) => {
     if (locked || date > today) return
+    feedback('tap')
     setPicker({ employeeId, name, date })
   }
   const pick = (code: string | null) => {

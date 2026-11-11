@@ -12,6 +12,7 @@ import { useSaveState, waitForSaves } from './saver'
 import { STATION, rememberStation, stationByCode, switchStation } from './stations'
 import { StationField, StationSheet } from './StationPicker'
 import { useZoom } from './zoom'
+import { feedback } from './feedback'
 
 type Tab = 'mark' | 'muster' | 'absentees' | 'night' | 'nh' | 'staff'
 
@@ -95,7 +96,7 @@ function Main() {
       {switching && <div className="switching">Opening station…</div>}
       <nav className="tabs">
         {([['mark', 'Mark'], ['muster', 'Muster'], ['absentees', 'Absentees'], ['night', 'Night Duty'], ['nh', 'NH'], ['staff', 'Staff']] as [Tab, string][]).map(([t, label]) => (
-          <button key={t} className={tab === t ? 'on' : ''} aria-current={tab === t ? 'page' : undefined} onClick={() => setTab(t)}>
+          <button key={t} data-fb="tick" className={tab === t ? 'on' : ''} aria-current={tab === t ? 'page' : undefined} onClick={() => setTab(t)}>
             <svg viewBox="0 0 24 24" aria-hidden="true">{TAB_ICONS[t]}</svg>
             {label}
           </button>
@@ -135,7 +136,7 @@ function Login() {
     rememberStation(station)
     const { error } = await supabase!.auth.signInWithPassword({ email: email.trim(), password })
     setBusy(false)
-    if (error) { setError('Could not sign in. Check the email and password.'); return }
+    if (error) { feedback('warn'); setError('Could not sign in. Check the email and password.'); return }
     // The app works on one station per page load; reload if a different one was chosen.
     if (station !== STATION.code) window.location.reload()
   }

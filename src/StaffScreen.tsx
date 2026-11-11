@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { db, refreshCurrentRoster } from './db'
 import { getState, refreshMeta } from './store'
 import { downloadBytes } from './download'
+import { feedback, setFeedback, useFeedbackSettings } from './feedback'
 import type { Employee } from './types'
 
 type Draft = Omit<Employee, 'id'> & { id?: string }
@@ -127,10 +128,32 @@ export function StaffScreen({ today }: { today: string }) {
       )}
 
       <div className="backup">
+        <h3>Sound &amp; vibration</h3>
+        <FeedbackSwitches />
+      </div>
+
+      <div className="backup">
         <h3>Backup</h3>
         <p className="muted">Saves all staff, periods and attendance to one file. Do this now and then and keep the file safe.</p>
         <button className="big-btn secondary" onClick={exportAll}>Download all data</button>
       </div>
+    </div>
+  )
+}
+
+/** On/off switches for the click sounds and vibration. */
+function FeedbackSwitches() {
+  const s = useFeedbackSettings()
+  const row = (label: string, hint: string, on: boolean, flip: () => void) => (
+    <button type="button" role="switch" aria-checked={on} data-fb="off" className={'fb-switch' + (on ? ' on' : '')} onClick={flip}>
+      <span className="fb-text"><b>{label}</b><small>{hint}</small></span>
+      <span className="fb-knob" aria-hidden="true" />
+    </button>
+  )
+  return (
+    <div className="fb-box">
+      {row('Click sounds', 'Soft clicks and ticks when tapping and scrolling', s.sound, () => { setFeedback({ sound: !s.sound }); if (!s.sound) feedback('tap') })}
+      {row('Vibration', 'A light buzz with each tap (Android phones)', s.haptics, () => { setFeedback({ haptics: !s.haptics }); if (!s.haptics) feedback('tap') })}
     </div>
   )
 }

@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from 'react'
 import { db, ensurePeriodFor, storageScope } from './db'
 import { STATION } from './stations'
+import { feedback } from './feedback'
 import { periodFor } from './dates'
 import { key } from './types'
 
@@ -19,6 +20,7 @@ try {
 
 let state: SaveState = 'idle'
 let running = false
+let failing = false
 const listeners = new Set<() => void>()
 let snapshot: { state: SaveState; failed: number } = { state, failed: 0 }
 
@@ -50,8 +52,11 @@ async function run() {
       for (const [k, p] of batch) if (queue.get(k) === p) queue.delete(k)
       emit()
     }
+    failing = false
     state = 'saved'
   } catch {
+    if (!failing) feedback('warn') // once when saving starts failing, not on every retry
+    failing = true
     state = 'error'
   } finally {
     running = false

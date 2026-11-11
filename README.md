@@ -1,4 +1,4 @@
-# Attendance Management System for Ennore Station
+# Attendance Management System for a Railway Station
 
 (The project folder and code still call it ENNORE Muster.)
 

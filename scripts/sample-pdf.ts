@@ -54,11 +54,11 @@ p2.drawPage(mine2, { opacity: 0.5 })
 writeFileSync('out/overlay-absentees.pdf', await ov2.save())
 // NDA statement with sample hours, plus an overlay on the blank reference.
 const entries = roster.map((r, i) => ({
-  period_start: start, employee_id: r.employee_id, roster: i === 3 ? 'Shift' : 'Cont.',
+  period_start: '2026-10-01', employee_id: r.employee_id, roster: i === 3 ? 'Shift' : 'Cont.',
   hours: i % 5 === 4 ? null : [48, 50, 51, 36, 60, 72, 12.5][i % 7],
   remarks: i === 1 ? 'Relieving duty at EN cabin' : i === 6 ? 'Includes 2 nights at another station for training and relief work' : '',
 }))
-const nda = await buildNdaPdf({ periodStart: start, roster, entries, fonts })
+const nda = await buildNdaPdf({ month: '2026-10-01', roster, entries, fonts })
 writeFileSync('out/sample-nda.pdf', nda)
 const ov3 = await PDFDocument.create()
 const [ref3] = await ov3.embedPdf(readFileSync('reference/NDA-BLANK-2026.pdf'))

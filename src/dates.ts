@@ -100,12 +100,37 @@ export function monthTitle(start: string): string {
     : `${MONTHS[sm - 1]} ${sy} - ${MONTHS[em - 1]} ${ey}`
 }
 
-/** Short title for narrow forms: "OCT - NOV 2026" or "DEC 2026 - JAN 2027". */
-export function shortMonthTitle(start: string): string {
-  const [sy, sm] = parts(start)
-  const [ey, em] = addMonths(sy, sm, 1)
-  const a = SHORT[sm - 1].toUpperCase(), b = SHORT[em - 1].toUpperCase()
-  return sy === ey ? `${a} - ${b} ${ey}` : `${a} ${sy} - ${b} ${ey}`
+// ---- Calendar months (Night Duty). Separate from the 16th–15th muster periods. ----
+
+/** First day of the date's calendar month: "2026-11-11" → "2026-11-01". */
+export function monthStart(date: string): string {
+  const [y, m] = parts(date)
+  return ymd(y, m, 1)
+}
+
+/** Move a month start by k months. */
+export function shiftMonth(month: string, k: number): string {
+  const [y, m] = parts(month)
+  const [ny, nm] = addMonths(y, m, k)
+  return ymd(ny, nm, 1)
+}
+
+/** "OCTOBER 2026" */
+export function monthName(month: string): string {
+  const [y, m] = parts(month)
+  return `${MONTHS[m - 1]} ${y}`
+}
+
+/** ["Oct", "2026"] for the month picker. */
+export function monthChip(month: string): [string, string] {
+  const [y, m] = parts(month)
+  return [SHORT[m - 1], String(y)]
+}
+
+/** "October 2026" */
+export function monthLabel(month: string): string {
+  const [y, m] = parts(month)
+  return `${MONTHS[m - 1][0]}${MONTHS[m - 1].slice(1).toLowerCase()} ${y}`
 }
 
 /** Header band: ["OCTOBER 2026", "NOVEMBER 2026"]. */

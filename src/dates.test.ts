@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  addDays, headerMonths, monthTitle, shortMonthTitle, periodColumns, periodDates, periodFor, periodLabel, shiftPeriod, todayIST,
+  addDays, headerMonths, monthTitle, monthStart, shiftMonth, monthName, monthLabel, periodColumns, periodDates, periodFor, periodLabel, shiftPeriod, todayIST,
 } from './dates'
 
 describe('periodFor', () => {
@@ -45,8 +45,17 @@ describe('labels', () => {
     expect(monthTitle('2026-12-16')).toBe('DECEMBER 2026 - JANUARY 2027')
     expect(headerMonths('2026-12-16')).toEqual(['DECEMBER 2026', 'JANUARY 2027'])
     expect(periodLabel('2026-12-16')).toBe('16 Dec 2026 to 15 Jan 2027')
-    expect(shortMonthTitle('2026-10-16')).toBe('OCT - NOV 2026')
-    expect(shortMonthTitle('2026-12-16')).toBe('DEC 2026 - JAN 2027')
+  })
+})
+
+describe('calendar months (night duty)', () => {
+  it('month start, shifting and names', () => {
+    expect(monthStart('2026-11-11')).toBe('2026-11-01')
+    expect(shiftMonth('2026-11-01', -1)).toBe('2026-10-01')
+    expect(shiftMonth('2026-01-01', -1)).toBe('2025-12-01')
+    expect(shiftMonth('2026-12-01', 1)).toBe('2027-01-01')
+    expect(monthName('2026-10-01')).toBe('OCTOBER 2026')
+    expect(monthLabel('2026-10-01')).toBe('October 2026')
   })
 })
 

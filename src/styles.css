@@ -293,3 +293,19 @@ main { flex: 1; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 .nd-total { display: flex; gap: 16px; align-items: baseline; background: var(--card); border-radius: var(--radius); padding: 12px 14px; margin: 10px 0 4px; font-size: 14px; color: var(--muted); }
 .nd-total span:first-child { flex: 1; font-weight: 600; color: var(--ink); }
 .nd-total b { font-size: 18px; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+/* Night Duty month strip */
+.month-strip {
+  position: relative; display: flex; gap: 8px; overflow-x: auto;
+  margin: 0 -16px; padding: 4px 16px 10px; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.month-strip::-webkit-scrollbar { display: none; }
+.month-chip {
+  flex: none; width: 64px; min-height: 60px; border: 0; border-radius: 16px;
+  background: var(--card); color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+}
+.month-chip b { font-size: 16px; font-weight: 600; }
+.month-chip small { font-size: 11px; color: var(--muted); }
+.month-chip.on { background: var(--brand); color: #fff; box-shadow: 0 6px 14px -6px rgba(91, 44, 143, 0.6); }
+.month-chip.on small { color: rgba(255, 255, 255, 0.8); }
+.nd-month { margin: 6px 2px 0; }

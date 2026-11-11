@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { db, storageScope } from './db'
-import { periodFor, periodLabel } from './dates'
+import { buildRoster, db, storageScope } from './db'
+import { monthChip, monthLabel, monthStart, shiftMonth } from './dates'
 import { downloadNda, preloadPdf } from './data'
 import { DEFAULT_ROSTER, fmtNumber, fmtWeighted, parseHours, weighted } from './nightDuty'
-import { usePeriodData } from './store'
+import { refreshMeta, useStore } from './store'
 import type { NightDutyRow } from './types'
 
 interface Draft { roster: string; hours: string; remarks: string }
 type Status = 'idle' | 'saving' | 'saved' | 'error'
 
-const cacheKey = (start: string) => `ennore-muster-nda-v1:${storageScope}:${start}`
+// Night duty is per calendar month (stored as the month's 1st), not per 16th–15th muster period.
+const MONTHS_BACK = 24
+const cacheKey = (month: string) => `ennore-muster-nda-v2:${storageScope}:${month}`
 const blank = (): Draft => ({ roster: DEFAULT_ROSTER, hours: '', remarks: '' })
 const toDraft = (r: NightDutyRow): Draft => ({ roster: r.roster || DEFAULT_ROSTER, hours: r.hours == null ? '' : fmtNumber(Number(r.hours)), remarks: r.remarks ?? '' })
 
@@ -18,17 +20,19 @@ function readCache(start: string): { drafts: Record<string, Draft>; dirty: strin
 }
 
 export function NightDutyScreen({ today }: { today: string }) {
-  const current = periodFor(today).start
-  const [start, setStart] = useState(current)
-  const data = usePeriodData(start)
-  const [drafts, setDrafts] = useState<Record<string, Draft>>(() => readCache(current).drafts)
+  const thisMonth = monthStart(today)
+  // Dad fills in a month after it ends, so last month opens first.
+  const [start, setStart] = useState(() => shiftMonth(thisMonth, -1))
+  const { employees } = useStore()
+  const roster = buildRoster(employees, start)
+  const [drafts, setDrafts] = useState<Record<string, Draft>>(() => readCache(shiftMonth(thisMonth, -1)).drafts)
   const [status, setStatus] = useState<Status>('idle')
   const [loadError, setLoadError] = useState<string | null>(null)
   const [working, setWorking] = useState(false)
 
   // Latest values for the background saver, which runs outside React's render cycle.
   const draftsRef = useRef(drafts)
-  const dirty = useRef(new Set<string>(readCache(current).dirty))
+  const dirty = useRef(new Set<string>(readCache(shiftMonth(thisMonth, -1)).dirty))
   const startRef = useRef(start)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   const saving = useRef(false)
@@ -92,7 +96,7 @@ export function NightDutyScreen({ today }: { today: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [start])
 
-  useEffect(() => { preloadPdf('nda') }, [])
+  useEffect(() => { preloadPdf('nda'); void refreshMeta().catch(() => {}) }, [])
   useEffect(() => () => { void flush() }, [flush])
 
   const edit = (id: string, field: keyof Draft, value: string) => {
@@ -105,35 +109,30 @@ export function NightDutyScreen({ today }: { today: string }) {
     timer.current = setTimeout(() => void flush(), 800)
   }
 
-  const options = Array.from(new Set([current, ...data.periods.map((p) => p.start_date)]))
-    .filter((s) => s <= current).sort().reverse()
+  const months = Array.from({ length: MONTHS_BACK + 1 }, (_, i) => shiftMonth(thisMonth, i - MONTHS_BACK))
 
-  const entries: NightDutyRow[] = data.roster.map((r) => {
+  const entries: NightDutyRow[] = roster.map((r) => {
     const d = drafts[r.employee_id] ?? blank()
     const h = parseHours(d.hours)
     return { period_start: start, employee_id: r.employee_id, roster: d.roster.trim() || DEFAULT_ROSTER, hours: h ?? null, remarks: d.remarks.trim() }
   })
   const totalHours = entries.reduce((t, e) => t + (e.hours ?? 0), 0)
   const totalWeighted = entries.reduce((t, e) => t + (weighted(e.hours) ?? 0), 0)
-  const invalid = data.roster.filter((r) => parseHours(drafts[r.employee_id]?.hours ?? '') === undefined).length
+  const invalid = roster.filter((r) => parseHours(drafts[r.employee_id]?.hours ?? '') === undefined).length
 
   const download = async () => {
     setWorking(true)
-    try { void flush(); await downloadNda(start, data.roster, entries) }
+    try { void flush(); await downloadNda(start, roster, entries) }
     catch (e) { alert('Could not make the PDF: ' + (e instanceof Error ? e.message : e)) }
     finally { setWorking(false) }
   }
 
   return (
     <div className="screen">
-      <label className="field">
-        <span>Period</span>
-        <select value={start} onChange={(e) => setStart(e.target.value)}>
-          {options.map((s) => <option key={s} value={s}>{periodLabel(s)}{s === current ? ' (current)' : ''}</option>)}
-        </select>
-      </label>
+      <MonthStrip months={months} value={start} onChange={setStart} />
+      <h2 className="nd-month">{monthLabel(start)}</h2>
       <p className="muted nd-note">
-        Enter each person's night duty hours. Weighted Hrs. is the hours ÷ 6, worked out for you.{' '}
+        Night duty hours for the whole calendar month. Weighted Hrs. is the hours ÷ 6, worked out for you.{' '}
         <span className={'nd-status ' + status}>
           {status === 'saving' && 'Saving…'}
           {status === 'saved' && '✓ Saved'}
@@ -141,10 +140,10 @@ export function NightDutyScreen({ today }: { today: string }) {
         </span>
       </p>
 
-      {(loadError || data.error) && <div className="error-box">Could not load: {loadError ?? data.error}</div>}
+      {loadError && <div className="error-box">Could not load: {loadError}</div>}
 
       <div className="nd-list">
-        {data.roster.map((r) => {
+        {roster.map((r) => {
           const d = drafts[r.employee_id] ?? blank()
           const bad = parseHours(d.hours) === undefined
           return (
@@ -184,9 +183,48 @@ export function NightDutyScreen({ today }: { today: string }) {
       </div>
       {invalid > 0 && <p className="nd-err">{invalid} entr{invalid === 1 ? 'y needs' : 'ies need'} fixing before it can be saved.</p>}
 
-      <button className="big-btn" disabled={working || !data.roster.length} onClick={download}>
+      <button className="big-btn" disabled={working || !roster.length} onClick={download}>
         {working ? 'Making PDF…' : 'Download NDA statement'}
       </button>
+    </div>
+  )
+}
+
+/** Sideways-scrolling strip of months; the chosen one is kept in view. */
+function MonthStrip({ months, value, onChange }: { months: string[]; value: string; onChange: (m: string) => void }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const first = useRef(true)
+  useEffect(() => {
+    const strip = ref.current
+    const el = strip?.querySelector<HTMLElement>(`[data-month="${value}"]`)
+    if (!strip || !el) return
+    // Centre the chosen month: instantly when the tab opens, smoothly after a tap.
+    const target = Math.max(0, Math.min(el.offsetLeft - (strip.clientWidth - el.offsetWidth) / 2, strip.scrollWidth - strip.clientWidth))
+    if (first.current) { strip.scrollLeft = target; first.current = false; return }
+    // Own short animation: the browser's smooth scroll gets cut off when the list below redraws.
+    const from = strip.scrollLeft
+    const t0 = performance.now()
+    let raf = 0
+    const step = (t: number) => {
+      const k = Math.min(1, (t - t0) / 260)
+      strip.scrollLeft = from + (target - from) * (1 - Math.pow(1 - k, 3))
+      if (k < 1) raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    // Land exactly on the month even if no frames were drawn (e.g. the app was in the background).
+    const done = setTimeout(() => { strip.scrollLeft = target }, 300)
+    return () => { cancelAnimationFrame(raf); clearTimeout(done) }
+  }, [value])
+  return (
+    <div className="month-strip" ref={ref} role="radiogroup" aria-label="Month">
+      {months.map((m) => {
+        const [mon, yr] = monthChip(m)
+        return (
+          <button key={m} data-month={m} role="radio" aria-checked={m === value} className={'month-chip' + (m === value ? ' on' : '')} onClick={() => onChange(m)}>
+            <b>{mon}</b><small>{yr}</small>
+          </button>
+        )
+      })}
     </div>
   )
 }

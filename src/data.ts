@@ -35,7 +35,7 @@ export function preloadPdf(kind: 'muster' | 'absentees' | 'nda' = 'muster') {
 
 export async function downloadNda(start: string, roster: RosterEntry[], entries: NightDutyRow[]) {
   const { nda, fonts } = await ndaKit()
-  const bytes = await nda.buildNdaPdf({ periodStart: start, roster, entries, fonts })
+  const bytes = await nda.buildNdaPdf({ month: start, roster, entries, fonts })
   downloadBytes(bytes, nda.ndaFileName(start), 'application/pdf')
 }
 

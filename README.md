@@ -80,7 +80,7 @@ The tab shows the totals on screen. **Download absentees statement** makes a one
 
 ## Night Duty (NDA statement)
 
-The **Night Duty** tab records, for each person in a 16th–15th period:
+The **Night Duty** tab is per **calendar month**, separate from the muster's 16th–15th periods. Pick the month on the sideways-scrolling month strip; it opens on last month, because the hours are filled in after the month ends. For each person it records:
 - **Roster:** editable text, "Cont." by default
 - **Total Hrs.:** a number, decimals allowed (e.g. 48 or 7.5)
 - **Remarks:** free text
@@ -89,9 +89,9 @@ The **Night Duty** tab records, for each person in a 16th–15th period:
 
 Entries save automatically a moment after typing stops. They are kept on the phone until saved, and retried if saving fails.
 
-**Download NDA statement** makes a one-page US Letter PDF matched to `reference/NDA-BLANK-2026.pdf` (`src/ndaPdf.ts`). The month prints short (OCT - NOV 2026) so it fits on the title line.
+**Download NDA statement** makes a one-page US Letter PDF matched to `reference/NDA-BLANK-2026.pdf` (`src/ndaPdf.ts`), titled with the month (e.g. OCTOBER 2026).
 
-The data lives in the `night_duty` table (`supabase/migrations/0002_night_duty.sql`).
+The data lives in the `night_duty` table (`supabase/migrations/0002_night_duty.sql`). Its `period_start` column holds the month's 1st day (`0003_night_duty_calendar_month.sql`).
 
 ## How it behaves
 

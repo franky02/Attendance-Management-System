@@ -1,6 +1,6 @@
--- Night Duty (NDA statement): hours per person per 16th–15th period. Owner-only, like the other tables.
+-- Night Duty (NDA statement): hours per person per calendar month (see 0003). Owner-only, like the other tables.
 create table public.night_duty (
-  period_start date not null,               -- always a 16th
+  period_start date not null,               -- the month's 1st day (changed from a 16th in 0003)
   employee_id uuid not null references public.employee(id),
   roster text not null default 'Cont.',
   hours numeric,                            -- blank = not entered; Weighted Hrs. (hours ÷ 6) is worked out in the app

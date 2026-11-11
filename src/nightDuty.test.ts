@@ -1,13 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { fmtNumber, fmtWeighted, parseHours } from './nightDuty'
+import { fmtHoursPadded, fmtNumber, fmtWeighted, parseHours } from './nightDuty'
 
 describe('night duty', () => {
-  it('weighted hours are hours ÷ 6, 2 decimals unless whole', () => {
-    expect(fmtWeighted(48)).toBe('8')
-    expect(fmtWeighted(50)).toBe('8.33')
-    expect(fmtWeighted(51)).toBe('8.50')
-    expect(fmtWeighted(0)).toBe('0')
+  it('weighted hours are hours ÷ 6, as 00.00', () => {
+    expect(fmtWeighted(36)).toBe('06.00')
+    expect(fmtWeighted(54)).toBe('09.00')
+    expect(fmtWeighted(56)).toBe('09.33')
+    expect(fmtWeighted(66)).toBe('11.00')
+    expect(fmtWeighted(51)).toBe('08.50')
+    expect(fmtWeighted(0)).toBe('00.00')
+    expect(fmtWeighted(744)).toBe('124.00')
     expect(fmtWeighted(null)).toBe('')
+    expect(fmtHoursPadded(18.4166)).toBe('18.42')
   })
   it('parses typed hours', () => {
     expect(parseHours('12')).toBe(12)

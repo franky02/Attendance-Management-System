@@ -22,7 +22,13 @@ export function weighted(hours: number | null | undefined): number | null {
   return hours == null ? null : hours / WEIGHT_DIVISOR
 }
 
+/** Weighted hours as at least two digits and always two decimals: 6 → "06.00", 9.33 → "09.33", 11 → "11.00". */
+export function fmtHoursPadded(n: number): string {
+  const [whole, dec] = (Math.round(n * 100) / 100).toFixed(2).split('.')
+  return `${whole.padStart(2, '0')}.${dec}`
+}
+
 export function fmtWeighted(hours: number | null | undefined): string {
   const w = weighted(hours)
-  return w == null ? '' : fmtNumber(w)
+  return w == null ? '' : fmtHoursPadded(w)
 }

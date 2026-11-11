@@ -4,7 +4,7 @@ import { STATION } from './stations'
 import { monthLabel, monthStart, shiftMonth } from './dates'
 import { downloadNda, preloadPdf } from './data'
 import { MonthStrip } from './MonthStrip'
-import { DEFAULT_ROSTER, fmtNumber, fmtWeighted, parseHours, weighted } from './nightDuty'
+import { DEFAULT_ROSTER, fmtHoursPadded, fmtNumber, fmtWeighted, parseHours, weighted } from './nightDuty'
 import { refreshMeta, useStore } from './store'
 import type { NightDutyRow } from './types'
 
@@ -178,7 +178,7 @@ export function NightDutyScreen({ today }: { today: string }) {
       <div className="nd-total">
         <span>Total</span>
         <span><b>{fmtNumber(totalHours)}</b> hrs</span>
-        <span><b>{fmtNumber(totalWeighted)}</b> weighted</span>
+        <span><b>{fmtHoursPadded(totalWeighted)}</b> weighted</span>
       </div>
       {invalid > 0 && <p className="nd-err">{invalid} entr{invalid === 1 ? 'y needs' : 'ies need'} fixing before it can be saved.</p>}
 

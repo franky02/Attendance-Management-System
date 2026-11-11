@@ -88,7 +88,7 @@ The **Night Duty** tab is per **calendar month**, separate from the muster's 16t
 - **Total Hrs.:** a number, decimals allowed (e.g. 48 or 7.5)
 - **Remarks:** free text
 
-**Roster** always prints "Cont." on the PDF; there is nothing to enter for it. **Weighted Hrs.** is Total Hrs. ÷ 6. The app works it out, so it isn't stored. Whole results print plain, others with 2 decimals (50 → 8.33).
+**Roster** always prints "Cont." on the PDF; there is nothing to enter for it. **Weighted Hrs.** is Total Hrs. ÷ 6. The app works it out, so it isn't stored. It always shows at least two digits and two decimals: 36 → 06.00, 56 → 09.33, 66 → 11.00. The same applies on screen, in the total and on the PDF.
 
 Entries save automatically a moment after typing stops. They are kept on the phone until saved, and retried if saving fails.
 

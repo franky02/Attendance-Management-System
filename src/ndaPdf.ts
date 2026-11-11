@@ -3,7 +3,8 @@
 import { PDFDocument, rgb, type PDFFont } from 'pdf-lib'
 import { monthName, parts } from './dates'
 import { DEFAULT_ROSTER, fmtNumber, fmtWeighted } from './nightDuty'
-import { embedFonts, type FontBytes, type FontKey } from './pdf'
+import { drawRun, embedFonts, type FontBytes, type FontKey } from './pdf'
+import { fileTag, printName } from './stations'
 import type { NightDutyRow, RosterEntry } from './types'
 
 const PAGE = [612, 792] as const // US Letter, portrait
@@ -26,12 +27,14 @@ export interface NdaInput {
   roster: RosterEntry[]
   entries: NightDutyRow[]
   fonts: FontBytes
+  stationName?: string
 }
 
 export async function buildNdaPdf(input: NdaInput): Promise<Uint8Array> {
   const doc = await PDFDocument.create()
   const f = await embedFonts(doc, input.fonts, NDA_FONTS)
-  doc.setTitle(`NDA Statement ENNORE ${monthName(input.month)}`)
+  const station = input.stationName ?? printName()
+  doc.setTitle(`NDA Statement ${station} ${monthName(input.month)}`)
   const page = doc.addPage([...PAGE])
   const text = (s: string, x: number, y: number, font: PDFFont, size: number) => page.drawText(s, { x, y, font, size, color: BLACK })
   const centred = (s: string, l: number, r: number, y: number, font: PDFFont, size: number) =>
@@ -55,10 +58,8 @@ export async function buildNdaPdf(input: NdaInput): Promise<Uint8Array> {
   // Title
   text('NDA', 40.68, 711.34, f.arialBlack, 14.04)
   text('Statement', 78.86, 711.34, f.arialBlack, 14.04)
-  const lead = 'of ENNORE Station staffs for the Month of'
-  text(lead, 163.58, 711.34, f.calibri, 15.96)
-  // The title already fills most of the line, so a long month name shrinks to fit.
-  const mx = 163.58 + f.calibri.widthOfTextAtSize(lead, 15.96) + 5
+  // The title fills most of the line: the lead shrinks only for long station names, then the month fits the rest.
+  const mx = drawRun(page, [{ t: `of ${station} Station staffs for the Month of`, font: f.calibri, size: 15.96 }], 163.58, 711.34, RIGHT - 95) - 0.5
   const month = monthName(input.month)
   text(month, mx, 711.34, f.calibriBold, fit(month, f.calibriBold, 15.96, RIGHT - mx))
 
@@ -132,5 +133,5 @@ function wrap(s: string, font: PDFFont, size: number, width: number): string[] {
 
 export function ndaFileName(month: string): string {
   const [y, m] = parts(month)
-  return `NDA-ENNORE-${y}-${String(m).padStart(2, '0')}.pdf`
+  return `NDA-${fileTag()}-${y}-${String(m).padStart(2, '0')}.pdf`
 }

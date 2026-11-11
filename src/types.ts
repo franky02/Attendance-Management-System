@@ -6,6 +6,7 @@ export interface Employee {
   code: string
   display_order: number
   left_on: string | null
+  station?: string
 }
 
 export interface RosterEntry {
@@ -23,6 +24,7 @@ export interface PeriodRow {
   roster: RosterEntry[]
   remarks: string
   final_downloaded_at: string | null
+  station?: string
 }
 
 export interface NightDutyRow {

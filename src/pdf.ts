@@ -1,4 +1,5 @@
-import { PDFDocument, PDFFont, rgb } from 'pdf-lib'
+import { PDFDocument, PDFFont, rgb, type PDFPage, type RGB } from 'pdf-lib'
+import { fileTag, printName } from './stations'
 import fontkit from '@pdf-lib/fontkit'
 import { ddmmyyyy, headerMonths, monthTitle, parts, periodColumns } from './dates'
 import { statusColor } from './statusCodes'
@@ -27,8 +28,21 @@ const H_RIGHT = 1147.68
 const GREY = rgb(0.85, 0.85, 0.85)
 const BLACK = rgb(0, 0, 0)
 
-const DECLARATION =
-  'All the Employees were physically present while on duty at ENNORE Station, and all leave has been sanctioned through HRMS for the above said period.'
+/** The declaration printed under the muster and the absentees statement. */
+export const declaration = (station: string) =>
+  `All the Employees were physically present while on duty at ${station} Station, and all leave has been sanctioned through HRMS for the above said period.`
+
+export interface Seg { t: string; font: PDFFont; size: number; color?: RGB }
+/** Draws pieces of a title one after another with normal spacing, shrinking them all if they would pass maxRight. Returns the end x. */
+export function drawRun(page: PDFPage, segs: Seg[], x: number, y: number, maxRight: number): number {
+  const total = segs.reduce((w, s, i) => w + s.font.widthOfTextAtSize(s.t + (i < segs.length - 1 ? ' ' : ''), s.size), 0)
+  const k = Math.min(1, (maxRight - x) / total)
+  for (const s of segs) {
+    page.drawText(s.t, { x, y, font: s.font, size: s.size * k, color: s.color ?? rgb(0, 0, 0) })
+    x += s.font.widthOfTextAtSize(s.t + ' ', s.size * k)
+  }
+  return x
+}
 
 export const FONT_FILES = {
   calibri: 'Carlito-Regular.ttf',
@@ -89,6 +103,8 @@ export interface MusterInput {
   roster: RosterEntry[]
   marks: Marks
   remarks: string
+  /** As printed, e.g. "ENNORE". Defaults to the current station. */
+  stationName?: string
   /** Interim PDF only: cells after this date print blank and a banner is added. */
   asOf?: string
   fonts: FontBytes
@@ -99,7 +115,8 @@ const hex = rgbHex
 export async function buildMusterPdf(input: MusterInput): Promise<Uint8Array> {
   const doc = await PDFDocument.create()
   const f = await embedFonts(doc, input.fonts, MUSTER_FONTS)
-  doc.setTitle(`Muster Roll ENNORE ${monthTitle(input.periodStart)}`)
+  const station = input.stationName ?? printName()
+  doc.setTitle(`Muster Roll ${station} ${monthTitle(input.periodStart)}`)
   const page = doc.addPage([...PAGE])
 
   const text = (s: string, x: number, y: number, font: PDFFont, size: number, color = BLACK) =>
@@ -152,15 +169,16 @@ export async function buildMusterPdf(input: MusterInput): Promise<Uint8Array> {
 
   // 3. Title
   const TY = 770.8
-  text('Muster Roll of', 36.0, TY, f.calibri, 16)
-  text('ENNORE Station', 131.9, TY, f.calibriBold, 18)
-  text('Staffs', 257.3, TY, f.calibriBold, 16)
-  text('for the Month of', 298.3, TY, f.calibri, 16)
-  text(monthTitle(input.periodStart), 411.2, TY, f.calibriBold, 16)
-  if (input.asOf) {
-    const s = `INTERIM: recorded up to ${ddmmyyyy(input.asOf)}`
-    text(s, V.rightEdge - f.calibriBold.widthOfTextAtSize(s, 12), TY, f.calibriBold, 12)
-  }
+  const interim = input.asOf ? `INTERIM: recorded up to ${ddmmyyyy(input.asOf)}` : ''
+  const interimW = interim ? f.calibriBold.widthOfTextAtSize(interim, 12) + 16 : 0
+  drawRun(page, [
+    { t: 'Muster Roll of', font: f.calibri, size: 16 },
+    { t: `${station} Station`, font: f.calibriBold, size: 18 },
+    { t: 'Staffs', font: f.calibriBold, size: 16 },
+    { t: 'for the Month of', font: f.calibri, size: 16 },
+    { t: monthTitle(input.periodStart), font: f.calibriBold, size: 16 },
+  ], 36.0, TY, V.rightEdge - interimW)
+  if (interim) text(interim, V.rightEdge - f.calibriBold.widthOfTextAtSize(interim, 12), TY, f.calibriBold, 12)
 
   // 4. Header band and column headings
   const [m1, m2] = headerMonths(input.periodStart)
@@ -196,7 +214,7 @@ export async function buildMusterPdf(input: MusterInput): Promise<Uint8Array> {
   }
 
   // 6. Declaration and remarks
-  text(DECLARATION, 36.0, 147.6, f.calibriBoldItalic, 14)
+  drawRun(page, [{ t: declaration(station), font: f.calibriBoldItalic, size: 14 }], 36.0, 147.6, V.rightEdge)
   text('Remarks :', 36.0, 94.7, f.calibriBoldItalic, 14)
   wrap(input.remarks.trim(), f.calibri, 12, V.rightEdge - 97)
     .slice(0, 2)
@@ -225,6 +243,6 @@ function wrap(s: string, font: PDFFont, size: number, width: number): string[] {
 
 export function musterFileName(periodStart: string, asOf?: string): string {
   const [y, m] = parts(periodStart)
-  const base = `Muster-ENNORE-${y}-${String(m).padStart(2, '0')}`
+  const base = `Muster-${fileTag()}-${y}-${String(m).padStart(2, '0')}`
   return asOf ? `${base}-Interim-${asOf}.pdf` : `${base}-Final.pdf`
 }

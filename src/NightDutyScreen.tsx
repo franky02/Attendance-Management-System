@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { buildRoster, db, storageScope } from './db'
+import { STATION } from './stations'
 import { monthLabel, monthStart, shiftMonth } from './dates'
 import { downloadNda, preloadPdf } from './data'
 import { MonthStrip } from './MonthStrip'
@@ -13,7 +14,7 @@ type Status = 'idle' | 'saving' | 'saved' | 'error'
 
 // Night duty is per calendar month (stored as the month's 1st), not per 16th–15th muster period.
 const MONTHS_BACK = 24
-const cacheKey = (month: string) => `ennore-muster-nda-v2:${storageScope}:${month}`
+const cacheKey = (month: string) => `ennore-muster-nda-v2:${storageScope}:${STATION.code}:${month}`
 const blank = (): Draft => ({ hours: '', remarks: '' })
 const toDraft = (r: NightDutyRow): Draft => ({ hours: r.hours == null ? '' : fmtNumber(Number(r.hours)), remarks: r.remarks ?? '' })
 

@@ -2,6 +2,7 @@
 // It is the only place the app code reads the staff list, so real builds never contain it.
 import type { Db } from './db'
 import { SEED_STAFF } from './seed'
+import { DEFAULT_STATION, STATION } from './stations'
 import type { AttendanceRow, Employee, Holiday, NightDutyRow, PeriodRow } from './types'
 
 // Demo mode: used when no Supabase settings are present. Data stays in this browser only.
@@ -15,7 +16,7 @@ function demoLoad(): DemoState {
   } catch { /* ignore */ }
   return {
     employee: SEED_STAFF.map(([full_name, designation, pf_hrms_number, code], i) => ({
-      id: crypto.randomUUID(), full_name, designation, pf_hrms_number, code, display_order: i + 1, left_on: null,
+      id: crypto.randomUUID(), full_name, designation, pf_hrms_number, code, display_order: i + 1, left_on: null, station: DEFAULT_STATION,
     })),
     period: [],
     attendance: [],
@@ -26,34 +27,38 @@ function demoLoad(): DemoState {
 
 export const demoDb = (): Db => {
   const st = demoLoad()
+  // Demo data from before stations existed belongs to Ennore.
+  st.employee.forEach((e) => { e.station ??= DEFAULT_STATION })
+  st.period.forEach((p) => { p.station ??= DEFAULT_STATION })
+  const here = () => new Set(st.employee.filter((e) => e.station === STATION.code).map((e) => e.id))
   const save = () => { try { localStorage.setItem(LS, JSON.stringify(st)) } catch { /* ignore */ } }
   const clone = <T,>(x: T): T => JSON.parse(JSON.stringify(x))
   const delay = () => new Promise((r) => setTimeout(r, 120))
   return {
     demo: true,
-    async getEmployees() { return clone([...st.employee].sort((a, b) => a.display_order - b.display_order)) },
+    async getEmployees() { return clone(st.employee.filter((e) => e.station === STATION.code).sort((a, b) => a.display_order - b.display_order)) },
     async saveEmployee(e) {
       await delay()
-      const row = { ...e, id: e.id ?? crypto.randomUUID() } as Employee
+      const row = { ...e, id: e.id ?? crypto.randomUUID(), station: e.station ?? STATION.code } as Employee
       const i = st.employee.findIndex((x) => x.id === row.id)
       if (i >= 0) st.employee[i] = row
       else st.employee.push(row)
       save()
       return clone(row)
     },
-    async getPeriods() { return clone([...st.period].sort((a, b) => b.start_date.localeCompare(a.start_date))) },
+    async getPeriods() { return clone(st.period.filter((p) => p.station === STATION.code).sort((a, b) => b.start_date.localeCompare(a.start_date))) },
     async ensurePeriod(row) {
-      if (!st.period.some((p) => p.start_date === row.start_date)) {
-        st.period.push({ ...row, remarks: '', final_downloaded_at: null })
+      if (!st.period.some((p) => p.station === STATION.code && p.start_date === row.start_date)) {
+        st.period.push({ ...row, station: STATION.code, remarks: '', final_downloaded_at: null })
         save()
       }
     },
     async updatePeriod(start, patch) {
-      const p = st.period.find((x) => x.start_date === start)
+      const p = st.period.find((x) => x.station === STATION.code && x.start_date === start)
       if (p) Object.assign(p, patch)
       save()
     },
-    async getAttendance(from, to) { return clone(st.attendance.filter((a) => a.att_date >= from && a.att_date <= to)) },
+    async getAttendance(from, to) { const ids = here(); return clone(st.attendance.filter((a) => ids.has(a.employee_id) && a.att_date >= from && a.att_date <= to)) },
     async upsertMarks(rows) {
       await delay()
       const k = (r: { employee_id: string; att_date: string }) => r.employee_id + '|' + r.att_date
@@ -67,7 +72,7 @@ export const demoDb = (): Db => {
       st.attendance = st.attendance.filter((a) => !gone.has(a.employee_id + '|' + a.att_date))
       save()
     },
-    async getNightDuty(periodStart) { return clone(st.night_duty.filter((r) => r.period_start === periodStart)) },
+    async getNightDuty(periodStart) { const ids = here(); return clone(st.night_duty.filter((r) => ids.has(r.employee_id) && r.period_start === periodStart)) },
     async upsertNightDuty(rows) {
       await delay()
       const k = (r: NightDutyRow) => r.period_start + '|' + r.employee_id

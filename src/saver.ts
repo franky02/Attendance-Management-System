@@ -2,6 +2,7 @@
 // Unsaved taps are kept on the phone, so closing the app does not lose them.
 import { useSyncExternalStore } from 'react'
 import { db, ensurePeriodFor, storageScope } from './db'
+import { STATION } from './stations'
 import { periodFor } from './dates'
 import { key } from './types'
 
@@ -9,7 +10,8 @@ export type SaveState = 'idle' | 'saving' | 'saved' | 'error'
 
 export interface Pending { employeeId: string; date: string; status: string | null }
 
-const QUEUE_KEY = `ennore-muster-unsaved-v1:${storageScope}`
+// Per station: an unsaved tap is sent the next time that station is open.
+const QUEUE_KEY = `ennore-muster-unsaved-v1:${storageScope}:${STATION.code}`
 const queue = new Map<string, Pending>() // latest wish per cell
 try {
   for (const p of JSON.parse(localStorage.getItem(QUEUE_KEY) ?? '[]') as Pending[]) queue.set(key(p.employeeId, p.date), p)
@@ -60,6 +62,14 @@ async function run() {
 export function saveMark(employeeId: string, date: string, status: string | null) {
   queue.set(key(employeeId, date), { employeeId, date, status })
   void run()
+}
+
+/** Wait (up to timeoutMs) for unsaved taps to be sent, e.g. before switching station. */
+export async function waitForSaves(timeoutMs = 4000): Promise<boolean> {
+  if (queue.size) void run()
+  const until = Date.now() + timeoutMs
+  while (queue.size && Date.now() < until) await new Promise((r) => setTimeout(r, 150))
+  return queue.size === 0
 }
 
 export function pendingEntries(): Pending[] {

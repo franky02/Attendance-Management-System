@@ -8,7 +8,9 @@ import { StaffScreen } from './StaffScreen'
 import { AbsenteesScreen } from './AbsenteesScreen'
 import { NightDutyScreen } from './NightDutyScreen'
 import { NhScreen } from './NhScreen'
-import { useSaveState } from './saver'
+import { useSaveState, waitForSaves } from './saver'
+import { STATION, rememberStation, stationByCode, switchStation } from './stations'
+import { StationField, StationSheet } from './StationPicker'
 import { useZoom } from './zoom'
 
 type Tab = 'mark' | 'muster' | 'absentees' | 'night' | 'nh' | 'staff'
@@ -43,6 +45,15 @@ function Main() {
   const [today, setToday] = useState(todayIST())
   const save = useSaveState()
   const z = useZoom()
+  const [picking, setPicking] = useState(false)
+  const [switching, setSwitching] = useState(false)
+  useEffect(() => { document.title = `Attendance Management System for ${STATION.name} Station` }, [])
+  const changeStation = async (code: string) => {
+    if (code === STATION.code) return
+    setSwitching(true)
+    await waitForSaves() // send any unsaved taps for this station first
+    switchStation(code)
+  }
   useEffect(() => { document.documentElement.style.setProperty('--z', String(z.zoom)) }, [z.zoom])
 
   // Roll over to the new day if the app is left open past midnight.
@@ -60,7 +71,7 @@ function Main() {
           <button className="zoom-btn" onClick={z.zoomOut} disabled={!z.canOut} aria-label="Zoom out (smaller)">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5L20 20M7.5 10.5h6" /></svg>
           </button>
-          <div className="title"><AppName /></div>
+          <div className="title"><AppName onStation={() => setPicking(true)} /></div>
           <button className="zoom-btn" onClick={z.zoomIn} disabled={!z.canIn} aria-label="Zoom in (bigger)">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5L20 20M7.5 10.5h6M10.5 7.5v6" /></svg>
           </button>
@@ -80,6 +91,8 @@ function Main() {
         {tab === 'nh' && <NhScreen today={today} />}
         {tab === 'staff' && <StaffScreen today={today} />}
       </main>
+      {picking && <StationSheet value={STATION.code} confirmLabel="Switch to" onPick={(c) => void changeStation(c)} onClose={() => setPicking(false)} />}
+      {switching && <div className="switching">Opening station…</div>}
       <nav className="tabs">
         {([['mark', 'Mark'], ['muster', 'Muster'], ['absentees', 'Absentees'], ['night', 'Night Duty'], ['nh', 'NH'], ['staff', 'Staff']] as [Tab, string][]).map(([t, label]) => (
           <button key={t} className={tab === t ? 'on' : ''} aria-current={tab === t ? 'page' : undefined} onClick={() => setTab(t)}>
@@ -93,30 +106,47 @@ function Main() {
 }
 
 /** The app's name: Playfair Display, with "Ennore" in a Didone italic (fonts in public/fonts). */
-function AppName() {
-  return <>Attendance Management System for <em>Ennore</em> Station</>
+/** "Attendance Management System for <Station> Station". With onStation, the station name is a button. */
+function AppName({ name = STATION.name, onStation }: { name?: string; onStation?: () => void }) {
+  return (
+    <>
+      Attendance Management System for{' '}
+      {onStation ? (
+        <button type="button" className="station-btn" onClick={onStation} aria-label={`${name}. Change station`}>
+          <em>{name}</em>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" /></svg>
+        </button>
+      ) : <em>{name}</em>}{' '}
+      Station
+    </>
+  )
 }
 
 function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [station, setStation] = useState(STATION.code)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setBusy(true)
+    rememberStation(station)
     const { error } = await supabase!.auth.signInWithPassword({ email: email.trim(), password })
     setBusy(false)
-    if (error) setError('Could not sign in. Check the email and password.')
+    if (error) { setError('Could not sign in. Check the email and password.'); return }
+    // The app works on one station per page load; reload if a different one was chosen.
+    if (station !== STATION.code) window.location.reload()
   }
 
   return (
     <form className="login" onSubmit={submit}>
-      <h1 className="title-big"><AppName /></h1>
+      <h1 className="title-big"><AppName name={stationByCode(station).name} /></h1>
       <div className="login-card">
       <label className="field"><span>Email</span><input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} /></label>
       <label className="field"><span>Password</span><input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} /></label>
+      <StationField value={station} onChange={setStation} />
       </div>
       {error && <div className="error-box">{error}</div>}
       <button className="big-btn" disabled={busy || !email || !password}>{busy ? 'Signing in…' : 'Sign in'}</button>

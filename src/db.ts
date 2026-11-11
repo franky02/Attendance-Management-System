@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { periodFor } from './dates'
 import { demoDb } from './demoDb'
+import { STATION } from './stations'
 import type { AttendanceRow, Holiday, NightDutyRow, Employee, PeriodRow, RosterEntry } from './types'
 
 export interface Db {
@@ -39,30 +40,33 @@ function check<T>(r: { data: T; error: { message: string } | null }): T {
 
 const supabaseDb = (sb: SupabaseClient): Db => ({
   demo: false,
+  // Everything below is limited to the current station (STATION), except national holidays.
   async getEmployees() {
-    return check(await sb.from('employee').select('*').order('display_order')) as Employee[]
+    return check(await sb.from('employee').select('*').eq('station', STATION.code).order('display_order')) as Employee[]
   },
   async saveEmployee(e) {
-    return check(await sb.from('employee').upsert(e).select().single()) as Employee
+    return check(await sb.from('employee').upsert({ ...e, station: e.station ?? STATION.code }).select().single()) as Employee
   },
   async getPeriods() {
-    return check(await sb.from('period').select('*').order('start_date', { ascending: false })) as PeriodRow[]
+    return check(await sb.from('period').select('*').eq('station', STATION.code).order('start_date', { ascending: false })) as PeriodRow[]
   },
   async ensurePeriod(row) {
-    check(await sb.from('period').upsert(row, { onConflict: 'start_date', ignoreDuplicates: true }))
+    check(await sb.from('period').upsert({ ...row, station: STATION.code }, { onConflict: 'station,start_date', ignoreDuplicates: true }))
   },
   async updatePeriod(start, patch) {
-    check(await sb.from('period').update(patch).eq('start_date', start))
+    check(await sb.from('period').update(patch).eq('station', STATION.code).eq('start_date', start))
   },
   async getAttendance(from, to) {
     const rows: AttendanceRow[] = []
     // Page through in case a period ever exceeds the 1000-row default.
     for (let off = 0; ; off += 1000) {
       const page = check(
-        await sb.from('attendance').select('employee_id,att_date,status').gte('att_date', from).lte('att_date', to)
+        // Only this station's staff: join to employee and filter on its station.
+        await sb.from('attendance').select('employee_id,att_date,status,employee!inner(station)')
+          .eq('employee.station', STATION.code).gte('att_date', from).lte('att_date', to)
           .order('att_date').range(off, off + 999),
-      ) as AttendanceRow[]
-      rows.push(...page)
+      ) as (AttendanceRow & { employee?: unknown })[]
+      rows.push(...page.map(({ employee_id, att_date, status }) => ({ employee_id, att_date, status })))
       if (page.length < 1000) return rows
     }
   },
@@ -77,7 +81,9 @@ const supabaseDb = (sb: SupabaseClient): Db => ({
     check(await sb.from('attendance').delete().or(filter))
   },
   async getNightDuty(periodStart) {
-    return check(await sb.from('night_duty').select('period_start,employee_id,roster,hours,remarks').eq('period_start', periodStart)) as NightDutyRow[]
+    const rows = check(await sb.from('night_duty').select('period_start,employee_id,roster,hours,remarks,employee!inner(station)')
+      .eq('employee.station', STATION.code).eq('period_start', periodStart)) as (NightDutyRow & { employee?: unknown })[]
+    return rows.map(({ employee: _e, ...r }) => r)
   },
   async upsertNightDuty(rows) {
     if (!rows.length) return
@@ -93,13 +99,20 @@ const supabaseDb = (sb: SupabaseClient): Db => ({
   async deleteHoliday(date) {
     check(await sb.from('national_holiday').delete().eq('holiday_date', date))
   },
+  // The backup holds every station's data, not just the current one.
   async exportAll() {
-    const [employee, period, night_duty, national_holiday] = await Promise.all([
-      this.getEmployees(), this.getPeriods(),
-      sb.from('night_duty').select('*').order('period_start').then((r) => check(r) as NightDutyRow[]),
-      this.getHolidays(),
+    const all = async <T,>(table: string, order: string): Promise<T[]> => {
+      const out: T[] = []
+      for (let off = 0; ; off += 1000) {
+        const page = check(await sb.from(table).select('*').order(order).range(off, off + 999)) as T[]
+        out.push(...page)
+        if (page.length < 1000) return out
+      }
+    }
+    const [employee, period, attendance, night_duty, national_holiday] = await Promise.all([
+      all<Employee>('employee', 'display_order'), all<PeriodRow>('period', 'start_date'), all<AttendanceRow>('attendance', 'att_date'),
+      all<NightDutyRow>('night_duty', 'period_start'), all<Holiday>('national_holiday', 'holiday_date'),
     ])
-    const attendance = await this.getAttendance('1900-01-01', '9999-12-31')
     return { employee, period, attendance, night_duty, national_holiday }
   },
 })

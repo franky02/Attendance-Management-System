@@ -2,6 +2,7 @@
 // and it refreshes from the server in the background.
 import { useEffect, useSyncExternalStore } from 'react'
 import { db, markPeriodsKnown, rosterFor, storageScope } from './db'
+import { STATION } from './stations'
 import { addDays, periodFor, todayIST } from './dates'
 import { pendingEntries } from './saver'
 import { key, type Employee, type Marks, type PeriodRow, type RosterEntry } from './types'
@@ -14,7 +15,7 @@ interface State {
   error: string | null
 }
 
-const CACHE_KEY = `ennore-muster-cache-v1:${storageScope}`
+const CACHE_KEY = `ennore-muster-cache-v1:${storageScope}:${STATION.code}`
 const KEEP_DAYS = 200 // marks older than this are not kept on the phone
 
 function hydrate(): State {

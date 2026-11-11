@@ -118,6 +118,16 @@ The magnifier buttons either side of the title make everything on the screen big
 
 The icon shows a train between two platforms, under "AMS". Its source is `scripts/icon/icon.svg`, and `scripts/icon/render.sh` turns it into `public/icon-*.png` (needs `brew install librsvg`). The main artwork stays inside the central safe area, so Android can crop it to a circle or squircle without cutting it off.
 
+## Stations
+
+Dad can work at any of the 19 stations in `src/stations.ts`: MGR Chennai Central Suburban to Arambakkam on the Gummidipundi line. To add one, add a line there.
+
+- **Choosing:** the sign-in screen has a **Station** field. Tapping it opens a scroll wheel. Once signed in, tapping the station name in the title opens the same wheel to switch. The app then reloads for that station, after sending any unsaved taps first.
+- **What's separate:** each station has its own staff (`employee.station`) and muster periods (`period` is keyed by station and start date). Attendance and night duty follow their staff, so they're separate too. A new station starts empty: add its staff on the Staff tab.
+- **What's shared:** national holiday dates, and the backup (**Download all data** saves every station).
+- **Title and PDFs:** both use the chosen station: "Attendance Management System for Ponneri Station", "Muster Roll of PONNERI Station Staffs …", and file names like `Muster-PONNERI-2026-10-Final.pdf`. Long names shrink to fit the title line.
+- **Database:** `supabase/migrations/0005_stations.sql`. Everything entered before stations existed belongs to Ennore (ENR).
+
 ## How it behaves
 
 - **Mark:** one tap saves, and tapping the selected code again clears it. "Mark remaining Present" fills only blank cells. Its Undo, shown for 10 seconds, removes only the cells it filled. Rest days: tap **R** first, then use "Mark remaining Present".

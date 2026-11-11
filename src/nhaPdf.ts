@@ -5,7 +5,8 @@
 import { PDFDocument, rgb, type PDFFont } from 'pdf-lib'
 import { parts } from './dates'
 import { nhaCount, nhaRows, nhRemark, type NhResult } from './nha'
-import { embedFonts, type FontBytes, type FontKey } from './pdf'
+import { drawRun, embedFonts, type FontBytes, type FontKey } from './pdf'
+import { fileTag, printName } from './stations'
 import type { Holiday, Marks, RosterEntry } from './types'
 
 const PAGE = [612, 792] as const // US Letter, portrait
@@ -36,6 +37,7 @@ export interface NhaInput {
   roster: RosterEntry[]
   marks: Marks
   fonts: FontBytes
+  stationName?: string
 }
 
 export async function buildNhaPdf(input: NhaInput): Promise<Uint8Array> {
@@ -43,7 +45,8 @@ export async function buildNhaPdf(input: NhaInput): Promise<Uint8Array> {
   const f = await embedFonts(doc, input.fonts, NHA_FONTS)
   const [y, m] = parts(input.month)
   const monthText = `${MONTHS[m - 1]}’${y}`
-  doc.setTitle(`NHA Statement ENNORE ${MONTHS[m - 1]} ${y}`)
+  const station = input.stationName ?? printName()
+  doc.setTitle(`NHA Statement ${station} ${MONTHS[m - 1]} ${y}`)
   const page = doc.addPage([...PAGE])
   const text = (s: string, x: number, yy: number, font: PDFFont, size: number, color = BLACK) => page.drawText(s, { x, y: yy, font, size, color })
   const centred = (s: string, l: number, r: number, yy: number, font: PDFFont, size: number, color = BLACK) =>
@@ -77,10 +80,11 @@ export async function buildNhaPdf(input: NhaInput): Promise<Uint8Array> {
   // Title and subtitle
   text('NHA', 36.0, 738.84, f.arialBlack, 14.04)
   text('Statement', 74.9, 738.84, f.arialBlack, 14.04)
-  text('of', 159.74, 738.84, f.calibri, 18)
-  text('ENNORE Station staffs', 178.82, 738.84, f.calibriBold, 15.96)
-  text('for the Month of', 330.53, 738.84, f.calibri, 18)
-  const mx = 330.53 + f.calibri.widthOfTextAtSize('for the Month of', 18) + 5
+  const mx = drawRun(page, [
+    { t: 'of', font: f.calibri, size: 18 },
+    { t: `${station} Station staffs`, font: f.calibriBold, size: 15.96 },
+    { t: 'for the Month of', font: f.calibri, size: 18 },
+  ], 159.74, 738.84, RIGHT - 105) + 0.6
   text(monthText, mx, 738.84, f.calibriBold, fit(monthText, f.calibriBold, 18, RIGHT - mx), MAGENTA)
   text('The following staffs are Eligible/Non-Eligible for National Holiday Allowance.', 36.0, 710.98, f.calibri, 14.04)
 
@@ -137,5 +141,5 @@ const COLOUR: Record<NhResult, ReturnType<typeof rgb>> = { eligible: SKY, inelig
 
 export function nhaFileName(month: string): string {
   const [y, m] = parts(month)
-  return `NHA-ENNORE-${y}-${String(m).padStart(2, '0')}.pdf`
+  return `NHA-${fileTag()}-${y}-${String(m).padStart(2, '0')}.pdf`
 }

@@ -3,7 +3,8 @@
 import { PDFDocument, rgb, type PDFFont } from 'pdf-lib'
 import { absenteeRows, isFullPeriod } from './absentees'
 import { ddmmyyyy, monthTitle, parts } from './dates'
-import { embedFonts, type FontBytes, type FontKey } from './pdf'
+import { declaration, drawRun, embedFonts, type FontBytes, type FontKey } from './pdf'
+import { fileTag, printName } from './stations'
 import type { Marks, RosterEntry } from './types'
 
 const PAGE = [612, 792] as const // US Letter, portrait
@@ -20,10 +21,8 @@ const BLACK = rgb(0, 0, 0)
 
 export const ABSENTEE_FONTS: FontKey[] = ['arialBlack', 'calibri', 'calibriBold', 'calibriItalic', 'arial', 'arialBold', 'narrowBold', 'bookmanBold']
 
-const DECLARATION = [
-  'All the Employees were physically present while on duty at ENNORE Station, and all leave has been',
-  'sanctioned through HRMS for the above said period.',
-]
+// The reference breaks the declaration after "has been"; other station names wrap at the same width.
+const DECL_LINE1 = 'All the Employees were physically present while on duty at ENNORE Station, and all leave has been'
 
 export interface AbsenteesInput {
   periodStart: string
@@ -31,12 +30,14 @@ export interface AbsenteesInput {
   roster: RosterEntry[]
   marks: Marks
   fonts: FontBytes
+  stationName?: string
 }
 
 export async function buildAbsenteesPdf(input: AbsenteesInput): Promise<Uint8Array> {
   const doc = await PDFDocument.create()
   const f = await embedFonts(doc, input.fonts, ABSENTEE_FONTS)
-  doc.setTitle(`Absentees Statement ENNORE ${monthTitle(input.periodStart)}`)
+  const station = input.stationName ?? printName()
+  doc.setTitle(`Absentees Statement ${station} ${monthTitle(input.periodStart)}`)
   const page = doc.addPage([...PAGE])
   const text = (s: string, x: number, y: number, font: PDFFont, size: number) => page.drawText(s, { x, y, font, size, color: BLACK })
   const centred = (s: string, l: number, r: number, y: number, font: PDFFont, size: number) =>
@@ -62,8 +63,7 @@ export async function buildAbsenteesPdf(input: AbsenteesInput): Promise<Uint8Arr
   // Title
   text('ABSENTEES', 36.0, 738.72, f.arialBlack, 14.04)
   text('Statement', 134.78, 738.72, f.arialBlack, 14.04)
-  text('of', 219.65, 738.72, f.calibri, 18)
-  text('ENNORE Station staffs', 238.73, 738.72, f.calibriBold, 18)
+  drawRun(page, [{ t: 'of', font: f.calibri, size: 18 }, { t: `${station} Station staffs`, font: f.calibriBold, size: 18 }], 219.65, 738.72, RIGHT)
   text('for the Month of', 36.0, 718.9, f.calibriItalic, 14.04)
   text(monthTitle(input.periodStart), 136.0, 718.9, f.calibriBold, 14.04)
   if (!isFullPeriod(input.periodStart, input.asOf)) {
@@ -96,13 +96,27 @@ export async function buildAbsenteesPdf(input: AbsenteesInput): Promise<Uint8Arr
   })
 
   // Declaration
-  DECLARATION.forEach((line, i) => text(line, 36.0, 97.44 - i * 15.72, f.calibriBold, 12))
+  const declW = f.calibriBold.widthOfTextAtSize(DECL_LINE1, 12) + 1
+  wrapWords(declaration(station), f.calibriBold, 12, declW).slice(0, 3)
+    .forEach((line, i) => text(line, 36.0, 97.44 - i * 15.72, f.calibriBold, 12))
 
   return doc.save()
 }
 
 export function absenteesFileName(periodStart: string, asOf: string): string {
   const [y, m] = parts(periodStart)
-  const base = `Absentees-ENNORE-${y}-${String(m).padStart(2, '0')}`
+  const base = `Absentees-${fileTag()}-${y}-${String(m).padStart(2, '0')}`
   return isFullPeriod(periodStart, asOf) ? `${base}-Final.pdf` : `${base}-upto-${asOf}.pdf`
+}
+
+function wrapWords(s: string, font: PDFFont, size: number, width: number): string[] {
+  const lines: string[] = []
+  let line = ''
+  for (const w of s.split(' ')) {
+    const next = line ? `${line} ${w}` : w
+    if (!line || font.widthOfTextAtSize(next, size) <= width) line = next
+    else { lines.push(line); line = w }
+  }
+  if (line) lines.push(line)
+  return lines
 }

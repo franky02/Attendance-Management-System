@@ -6,15 +6,17 @@ import { MarkScreen } from './MarkScreen'
 import { MusterScreen } from './MusterScreen'
 import { StaffScreen } from './StaffScreen'
 import { AbsenteesScreen } from './AbsenteesScreen'
+import { NightDutyScreen } from './NightDutyScreen'
 import { useSaveState } from './saver'
 
-type Tab = 'mark' | 'muster' | 'absentees' | 'staff'
+type Tab = 'mark' | 'muster' | 'absentees' | 'night' | 'staff'
 
 // Line icons for the bottom tab bar (drawn here, no icon library).
 const TAB_ICONS: Record<Tab, React.ReactNode> = {
   mark: <><circle cx="12" cy="12" r="8.5" /><path d="M8.2 12.4l2.6 2.6 5-5.2" /></>,
   muster: <><rect x="3.5" y="4.5" width="17" height="15" rx="2.5" /><path d="M3.5 9.5h17M9.5 9.5v10M15 9.5v10" /></>,
   absentees: <><rect x="3.5" y="5" width="17" height="15" rx="2.5" /><path d="M3.5 10h17M8 3v4M16 3v4M9.5 15h5" /></>,
+  night: <path d="M19.5 14.6A8 8 0 0 1 9.4 4.5a8 8 0 1 0 10.1 10.1z" />,
   staff: <><circle cx="9.5" cy="8.5" r="3.3" /><path d="M3.5 19.5c.6-3.2 3-5 6-5s5.4 1.8 6 5M15.6 5.4a3.2 3.2 0 0 1 0 6.2M17.4 14.8c1.7.6 2.8 2.2 3.1 4.7" /></>,
 }
 
@@ -61,10 +63,11 @@ function Main() {
         {tab === 'mark' && <MarkScreen today={today} />}
         {tab === 'muster' && <MusterScreen today={today} />}
         {tab === 'absentees' && <AbsenteesScreen today={today} />}
+        {tab === 'night' && <NightDutyScreen today={today} />}
         {tab === 'staff' && <StaffScreen today={today} />}
       </main>
       <nav className="tabs">
-        {([['mark', 'Mark'], ['muster', 'Muster'], ['absentees', 'Absentees'], ['staff', 'Staff']] as [Tab, string][]).map(([t, label]) => (
+        {([['mark', 'Mark'], ['muster', 'Muster'], ['absentees', 'Absentees'], ['night', 'Night Duty'], ['staff', 'Staff']] as [Tab, string][]).map(([t, label]) => (
           <button key={t} className={tab === t ? 'on' : ''} aria-current={tab === t ? 'page' : undefined} onClick={() => setTab(t)}>
             <svg viewBox="0 0 24 24" aria-hidden="true">{TAB_ICONS[t]}</svg>
             {label}

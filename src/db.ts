@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { periodFor } from './dates'
 import { demoDb } from './demoDb'
-import type { AttendanceRow, Employee, PeriodRow, RosterEntry } from './types'
+import type { AttendanceRow, NightDutyRow, Employee, PeriodRow, RosterEntry } from './types'
 
 export interface Db {
   demo: boolean
@@ -16,7 +16,9 @@ export interface Db {
   upsertMarks(rows: AttendanceRow[]): Promise<void>
   /** Clear cells (a blank cell is a missing row) in one request. */
   deleteMarks(rows: { employee_id: string; att_date: string }[]): Promise<void>
-  exportAll(): Promise<{ employee: Employee[]; period: PeriodRow[]; attendance: AttendanceRow[] }>
+  getNightDuty(periodStart: string): Promise<NightDutyRow[]>
+  upsertNightDuty(rows: NightDutyRow[]): Promise<void>
+  exportAll(): Promise<{ employee: Employee[]; period: PeriodRow[]; attendance: AttendanceRow[]; night_duty: NightDutyRow[] }>
 }
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
@@ -71,10 +73,21 @@ const supabaseDb = (sb: SupabaseClient): Db => ({
     const filter = rows.map((r) => `and(employee_id.eq.${r.employee_id},att_date.eq.${r.att_date})`).join(',')
     check(await sb.from('attendance').delete().or(filter))
   },
+  async getNightDuty(periodStart) {
+    return check(await sb.from('night_duty').select('period_start,employee_id,roster,hours,remarks').eq('period_start', periodStart)) as NightDutyRow[]
+  },
+  async upsertNightDuty(rows) {
+    if (!rows.length) return
+    const stamped = rows.map((r) => ({ ...r, updated_at: new Date().toISOString() }))
+    check(await sb.from('night_duty').upsert(stamped, { onConflict: 'period_start,employee_id' }))
+  },
   async exportAll() {
-    const [employee, period] = await Promise.all([this.getEmployees(), this.getPeriods()])
+    const [employee, period, night_duty] = await Promise.all([
+      this.getEmployees(), this.getPeriods(),
+      sb.from('night_duty').select('*').order('period_start').then((r) => check(r) as NightDutyRow[]),
+    ])
     const attendance = await this.getAttendance('1900-01-01', '9999-12-31')
-    return { employee, period, attendance }
+    return { employee, period, attendance, night_duty }
   },
 })
 

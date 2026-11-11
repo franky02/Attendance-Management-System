@@ -78,6 +78,21 @@ The **Absentees** tab totals three kinds of absence for one period, from the 16t
 
 The tab shows the totals on screen. **Download absentees statement** makes a one-page US Letter PDF that matches `reference/ABSENTEES-Statement-BLANK.pdf` (`src/absenteesPdf.ts`). If the count stops before the period ends, the PDF is marked "INTERIM: recorded up to …". The codes behind each column are set in `ABSENTEE_COLUMNS` in `src/absentees.ts`.
 
+## Night Duty (NDA statement)
+
+The **Night Duty** tab records, for each person in a 16th–15th period:
+- **Roster:** editable text, "Cont." by default
+- **Total Hrs.:** a number, decimals allowed (e.g. 48 or 7.5)
+- **Remarks:** free text
+
+**Weighted Hrs.** is Total Hrs. ÷ 6. The app works it out, so it isn't stored. Whole results print plain, others with 2 decimals (50 → 8.33).
+
+Entries save automatically a moment after typing stops. They are kept on the phone until saved, and retried if saving fails.
+
+**Download NDA statement** makes a one-page US Letter PDF matched to `reference/NDA-BLANK-2026.pdf` (`src/ndaPdf.ts`). The month prints short (OCT - NOV 2026) so it fits on the title line.
+
+The data lives in the `night_duty` table (`supabase/migrations/0002_night_duty.sql`).
+
 ## How it behaves
 
 - **Mark:** one tap saves, and tapping the selected code again clears it. "Mark remaining Present" fills only blank cells. Its Undo, shown for 10 seconds, removes only the cells it filled. Rest days: tap **R** first, then use "Mark remaining Present".

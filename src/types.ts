@@ -25,6 +25,15 @@ export interface PeriodRow {
   final_downloaded_at: string | null
 }
 
+export interface NightDutyRow {
+  period_start: string
+  employee_id: string
+  roster: string
+  hours: number | null
+  remarks: string
+  updated_at?: string
+}
+
 export interface AttendanceRow {
   employee_id: string
   att_date: string

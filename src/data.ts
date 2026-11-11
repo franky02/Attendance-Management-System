@@ -1,7 +1,7 @@
 import { db, rosterFor } from './db'
 import { periodDates, periodFor } from './dates'
 import { downloadBytes } from './download'
-import { key, type Marks, type RosterEntry } from './types'
+import { key, type Marks, type NightDutyRow, type RosterEntry } from './types'
 
 export function countUnmarked(start: string, roster: RosterEntry[], marks: Marks): number {
   let n = 0
@@ -17,16 +17,26 @@ async function musterKit() {
   const pdf = await loadPdf()
   return { pdf, fonts: await pdf.loadFontsBrowser(pdf.MUSTER_FONTS) }
 }
+async function ndaKit() {
+  const [pdf, nda] = await Promise.all([loadPdf(), import('./ndaPdf')])
+  return { nda, fonts: await pdf.loadFontsBrowser(nda.NDA_FONTS) }
+}
 async function absenteesKit() {
   const [pdf, abs] = await Promise.all([loadPdf(), import('./absenteesPdf')])
   return { abs, fonts: await pdf.loadFontsBrowser(abs.ABSENTEE_FONTS) }
 }
 
 /** Start loading a PDF maker in the background so the first PDF is quick. */
-export function preloadPdf(kind: 'muster' | 'absentees' = 'muster') {
-  const go = () => { void (kind === 'muster' ? musterKit() : absenteesKit()).catch(() => {}) }
+export function preloadPdf(kind: 'muster' | 'absentees' | 'nda' = 'muster') {
+  const go = () => { void (kind === 'muster' ? musterKit() : kind === 'nda' ? ndaKit() : absenteesKit()).catch(() => {}) }
   if ('requestIdleCallback' in window) requestIdleCallback(go, { timeout: 3000 })
   else setTimeout(go, 1000)
+}
+
+export async function downloadNda(start: string, roster: RosterEntry[], entries: NightDutyRow[]) {
+  const { nda, fonts } = await ndaKit()
+  const bytes = await nda.buildNdaPdf({ periodStart: start, roster, entries, fonts })
+  downloadBytes(bytes, nda.ndaFileName(start), 'application/pdf')
 }
 
 export async function downloadAbsentees(start: string, asOf: string, roster: RosterEntry[], marks: Marks) {

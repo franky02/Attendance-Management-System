@@ -69,7 +69,7 @@ main { flex: 1; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 /* Bottom tab bar */
 .tabs {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
-  display: grid; grid-template-columns: repeat(4, 1fr);
+  display: grid; grid-template-columns: repeat(5, 1fr);
   background: var(--card); border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom);
 }
@@ -266,3 +266,30 @@ main { flex: 1; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 .abs-table .sl { color: var(--faint); }
 .abs-table tbody tr:not(.has) td.l { color: var(--muted); font-weight: 400; }
 .abs-table tfoot td { height: 50px; border-bottom: 0; border-top: 1px solid var(--brand); font-weight: 700; font-size: 15px; color: var(--brand-ink); }
+
+/* Night Duty */
+.nd-note { margin: 2px 2px 10px; }
+.nd-status { font-weight: 600; white-space: nowrap; }
+.nd-status.saved { color: var(--brand); }
+.nd-status.error { color: var(--err); }
+.nd-list { display: flex; flex-direction: column; gap: 10px; }
+.nd-card { background: var(--card); border-radius: var(--radius); padding: 12px 14px 14px; }
+.nd-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.nd-head .name { flex: 1; }
+.nd-des { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); }
+.nd-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.nd-f { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.nd-f > span { font-size: 12px; font-weight: 500; color: var(--muted); padding-left: 2px; white-space: nowrap; }
+.nd-f input, .nd-f output {
+  min-height: 48px; width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px;
+  background: var(--card); font-size: 16px;
+}
+.nd-f input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+.nd-f.hours input { font-weight: 600; font-variant-numeric: tabular-nums; }
+.nd-f.bad input { border-color: var(--err); box-shadow: 0 0 0 3px var(--err-bg); }
+.nd-f output { display: flex; align-items: center; background: var(--head); border-color: transparent; font-weight: 600; color: var(--brand-ink); font-variant-numeric: tabular-nums; }
+.nd-f.remarks { margin-top: 8px; }
+.nd-err { color: var(--err); font-size: 13px; margin: 6px 2px 0; }
+.nd-total { display: flex; gap: 16px; align-items: baseline; background: var(--card); border-radius: var(--radius); padding: 12px 14px; margin: 10px 0 4px; font-size: 14px; color: var(--muted); }
+.nd-total span:first-child { flex: 1; font-weight: 600; color: var(--ink); }
+.nd-total b { font-size: 18px; color: var(--ink); font-variant-numeric: tabular-nums; }

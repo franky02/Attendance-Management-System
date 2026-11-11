@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
-  addDays, headerMonths, monthTitle, periodColumns, periodDates, periodFor, periodLabel, shiftPeriod, todayIST,
+  addDays, headerMonths, monthTitle, shortMonthTitle, periodColumns, periodDates, periodFor, periodLabel, shiftPeriod, todayIST,
 } from './dates'
 
 describe('periodFor', () => {
@@ -45,6 +45,8 @@ describe('labels', () => {
     expect(monthTitle('2026-12-16')).toBe('DECEMBER 2026 - JANUARY 2027')
     expect(headerMonths('2026-12-16')).toEqual(['DECEMBER 2026', 'JANUARY 2027'])
     expect(periodLabel('2026-12-16')).toBe('16 Dec 2026 to 15 Jan 2027')
+    expect(shortMonthTitle('2026-10-16')).toBe('OCT - NOV 2026')
+    expect(shortMonthTitle('2026-12-16')).toBe('DEC 2026 - JAN 2027')
   })
 })
 

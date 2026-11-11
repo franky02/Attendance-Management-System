@@ -2,16 +2,16 @@
 // It is the only place the app code reads the staff list, so real builds never contain it.
 import type { Db } from './db'
 import { SEED_STAFF } from './seed'
-import type { AttendanceRow, Employee, PeriodRow } from './types'
+import type { AttendanceRow, Employee, NightDutyRow, PeriodRow } from './types'
 
 // Demo mode: used when no Supabase settings are present. Data stays in this browser only.
 const LS = 'ennore-muster-demo'
-interface DemoState { employee: Employee[]; period: PeriodRow[]; attendance: AttendanceRow[] }
+interface DemoState { employee: Employee[]; period: PeriodRow[]; attendance: AttendanceRow[]; night_duty: NightDutyRow[] }
 
 function demoLoad(): DemoState {
   try {
     const s = localStorage.getItem(LS)
-    if (s) return JSON.parse(s)
+    if (s) return { night_duty: [], ...JSON.parse(s) }
   } catch { /* ignore */ }
   return {
     employee: SEED_STAFF.map(([full_name, designation, pf_hrms_number, code], i) => ({
@@ -19,6 +19,7 @@ function demoLoad(): DemoState {
     })),
     period: [],
     attendance: [],
+    night_duty: [],
   }
 }
 
@@ -63,6 +64,14 @@ export const demoDb = (): Db => {
       await delay()
       const gone = new Set(rows.map((r) => r.employee_id + '|' + r.att_date))
       st.attendance = st.attendance.filter((a) => !gone.has(a.employee_id + '|' + a.att_date))
+      save()
+    },
+    async getNightDuty(periodStart) { return clone(st.night_duty.filter((r) => r.period_start === periodStart)) },
+    async upsertNightDuty(rows) {
+      await delay()
+      const k = (r: NightDutyRow) => r.period_start + '|' + r.employee_id
+      const incoming = new Set(rows.map(k))
+      st.night_duty = st.night_duty.filter((r) => !incoming.has(k(r))).concat(clone(rows))
       save()
     },
     async exportAll() { return clone(st) },

@@ -100,6 +100,14 @@ export function monthTitle(start: string): string {
     : `${MONTHS[sm - 1]} ${sy} - ${MONTHS[em - 1]} ${ey}`
 }
 
+/** Short title for narrow forms: "OCT - NOV 2026" or "DEC 2026 - JAN 2027". */
+export function shortMonthTitle(start: string): string {
+  const [sy, sm] = parts(start)
+  const [ey, em] = addMonths(sy, sm, 1)
+  const a = SHORT[sm - 1].toUpperCase(), b = SHORT[em - 1].toUpperCase()
+  return sy === ey ? `${a} - ${b} ${ey}` : `${a} ${sy} - ${b} ${ey}`
+}
+
 /** Header band: ["OCTOBER 2026", "NOVEMBER 2026"]. */
 export function headerMonths(start: string): [string, string] {
   const [sy, sm] = parts(start)

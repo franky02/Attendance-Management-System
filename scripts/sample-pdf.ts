@@ -4,6 +4,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { PDFDocument } from 'pdf-lib'
 import { buildMusterPdf, FONT_FILES, type FontBytes } from '../src/pdf'
 import { buildAbsenteesPdf } from '../src/absenteesPdf'
+import { buildNdaPdf } from '../src/ndaPdf'
 import { SEED_STAFF } from '../src/seed'
 import { periodDates } from '../src/dates'
 import { key, type Marks, type RosterEntry } from '../src/types'
@@ -51,5 +52,21 @@ const p2 = ov2.addPage([ref2.width, ref2.height])
 p2.drawPage(ref2)
 p2.drawPage(mine2, { opacity: 0.5 })
 writeFileSync('out/overlay-absentees.pdf', await ov2.save())
+// NDA statement with sample hours, plus an overlay on the blank reference.
+const entries = roster.map((r, i) => ({
+  period_start: start, employee_id: r.employee_id, roster: i === 3 ? 'Shift' : 'Cont.',
+  hours: i % 5 === 4 ? null : [48, 50, 51, 36, 60, 72, 12.5][i % 7],
+  remarks: i === 1 ? 'Relieving duty at EN cabin' : i === 6 ? 'Includes 2 nights at another station for training and relief work' : '',
+}))
+const nda = await buildNdaPdf({ periodStart: start, roster, entries, fonts })
+writeFileSync('out/sample-nda.pdf', nda)
+const ov3 = await PDFDocument.create()
+const [ref3] = await ov3.embedPdf(readFileSync('reference/NDA-BLANK-2026.pdf'))
+const [mine3] = await ov3.embedPdf(nda)
+const p3 = ov3.addPage([ref3.width, ref3.height])
+p3.drawPage(ref3)
+p3.drawPage(mine3, { opacity: 0.5 })
+writeFileSync('out/overlay-nda.pdf', await ov3.save())
+console.log('wrote out/sample-nda.pdf, out/overlay-nda.pdf')
 console.log('wrote out/sample-absentees.pdf, out/overlay-absentees.pdf')
 console.log('wrote out/sample-final.pdf, out/sample-interim.pdf, out/overlay.pdf')

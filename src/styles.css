@@ -1,11 +1,11 @@
-/* Title only: Playfair Display, with "Ennore" in Bodoni Moda Italic (subsets in public/fonts). */
+/* Title only: Playfair Display, with the station name in Bodoni Moda Bold Italic (in public/fonts). */
 @font-face {
   font-family: 'Playfair Display'; font-style: normal; font-weight: 600; font-display: swap;
   src: url('/fonts/PlayfairDisplay-SemiBold-title.woff2') format('woff2');
 }
 @font-face {
-  font-family: 'Bodoni Moda'; font-style: italic; font-weight: 500; font-display: swap;
-  src: url('/fonts/BodoniModa-Italic-title.woff2') format('woff2');
+  font-family: 'Bodoni Moda'; font-style: italic; font-weight: 700; font-display: swap;
+  src: url('/fonts/BodoniModa-BoldItalic-latin.woff2') format('woff2');
 }
 /* Red and blue belong to attendance (P / A / R) only. The app's own colours are purple and magenta. */
 :root {
@@ -56,7 +56,7 @@ p { margin: 8px 0; }
 }
 .title, .title-big { font-family: 'Playfair Display', Georgia, serif; font-weight: 600; letter-spacing: -0.005em; color: var(--brand-ink); }
 .title { font-size: 18px; line-height: 1.2; }
-.title em, .title-big em { font-family: 'Bodoni Moda', 'Didot', Georgia, serif; font-style: italic; font-weight: 500; font-size: 1.12em; letter-spacing: 0; color: var(--magenta); }
+.title em, .title-big em { font-family: 'Bodoni Moda', 'Didot', Georgia, serif; font-style: italic; font-weight: 700; font-size: 1.12em; letter-spacing: 0; color: var(--magenta); }
 .save-state { min-height: 18px; font-size: 12px; line-height: 18px; color: var(--muted); }
 .save-state.saved { color: var(--brand); }
 .save-state.error { color: var(--err); font-weight: 600; }

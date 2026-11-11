@@ -277,7 +277,7 @@ main { flex: 1; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 .nd-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
 .nd-head .name { flex: 1; }
 .nd-des { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); }
-.nd-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.nd-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .nd-f { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .nd-f > span { font-size: 12px; font-weight: 500; color: var(--muted); padding-left: 2px; white-space: nowrap; }
 .nd-f input, .nd-f output {

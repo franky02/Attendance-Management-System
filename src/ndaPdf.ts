@@ -86,8 +86,7 @@ export async function buildNdaPdf(input: NdaInput): Promise<Uint8Array> {
     text(r.full_name, 67.8, base, f.arialBold, fit(r.full_name, f.arialBold, nameMax, V[2] - 67.8 - 3))
     centred(r.designation, V[2], V[3], base, f.narrowBold, fit(r.designation, f.narrowBold, 11.04, V[3] - V[2] - 4))
     text(r.pf_hrms_number, 287.45, base, f.calibriBold, fit(r.pf_hrms_number, f.calibriBold, 11.04, V[4] - 287.45 - 3))
-    const roster = e?.roster?.trim() || DEFAULT_ROSTER
-    centred(roster, V[4], V[5], base, f.calibriBold, fit(roster, f.calibriBold, 11.04, V[5] - V[4] - 4))
+    centred(DEFAULT_ROSTER, V[4], V[5], base, f.calibriBold, 11.04) // Roster is always Cont.
     if (e?.hours != null) {
       centred(fmtNumber(Number(e.hours)), V[5], V[6], base, f.calibriBold, 12)
       centred(fmtWeighted(Number(e.hours)), V[6], V[7], base, f.calibriBold, 12)

@@ -6,14 +6,15 @@ import { DEFAULT_ROSTER, fmtNumber, fmtWeighted, parseHours, weighted } from './
 import { refreshMeta, useStore } from './store'
 import type { NightDutyRow } from './types'
 
-interface Draft { roster: string; hours: string; remarks: string }
+// Roster is always 'Cont.': it is printed on the PDF but is not something Dad enters.
+interface Draft { hours: string; remarks: string }
 type Status = 'idle' | 'saving' | 'saved' | 'error'
 
 // Night duty is per calendar month (stored as the month's 1st), not per 16th–15th muster period.
 const MONTHS_BACK = 24
 const cacheKey = (month: string) => `ennore-muster-nda-v2:${storageScope}:${month}`
-const blank = (): Draft => ({ roster: DEFAULT_ROSTER, hours: '', remarks: '' })
-const toDraft = (r: NightDutyRow): Draft => ({ roster: r.roster || DEFAULT_ROSTER, hours: r.hours == null ? '' : fmtNumber(Number(r.hours)), remarks: r.remarks ?? '' })
+const blank = (): Draft => ({ hours: '', remarks: '' })
+const toDraft = (r: NightDutyRow): Draft => ({ hours: r.hours == null ? '' : fmtNumber(Number(r.hours)), remarks: r.remarks ?? '' })
 
 function readCache(start: string): { drafts: Record<string, Draft>; dirty: string[] } {
   try { return JSON.parse(localStorage.getItem(cacheKey(start)) ?? '') } catch { return { drafts: {}, dirty: [] } }
@@ -49,7 +50,7 @@ export function NightDutyScreen({ today }: { today: string }) {
     if (!ids.length) return
     const rows: NightDutyRow[] = ids.map((id) => {
       const d = draftsRef.current[id]
-      return { period_start: periodStart, employee_id: id, roster: d.roster.trim() || DEFAULT_ROSTER, hours: parseHours(d.hours) ?? null, remarks: d.remarks.trim() }
+      return { period_start: periodStart, employee_id: id, roster: DEFAULT_ROSTER, hours: parseHours(d.hours) ?? null, remarks: d.remarks.trim() }
     })
     const sent = new Map(ids.map((id) => [id, JSON.stringify(draftsRef.current[id])]))
     saving.current = true
@@ -114,7 +115,7 @@ export function NightDutyScreen({ today }: { today: string }) {
   const entries: NightDutyRow[] = roster.map((r) => {
     const d = drafts[r.employee_id] ?? blank()
     const h = parseHours(d.hours)
-    return { period_start: start, employee_id: r.employee_id, roster: d.roster.trim() || DEFAULT_ROSTER, hours: h ?? null, remarks: d.remarks.trim() }
+    return { period_start: start, employee_id: r.employee_id, roster: DEFAULT_ROSTER, hours: h ?? null, remarks: d.remarks.trim() }
   })
   const totalHours = entries.reduce((t, e) => t + (e.hours ?? 0), 0)
   const totalWeighted = entries.reduce((t, e) => t + (weighted(e.hours) ?? 0), 0)
@@ -153,10 +154,6 @@ export function NightDutyScreen({ today }: { today: string }) {
                 <span className="nd-des">{r.designation}</span>
               </div>
               <div className="nd-fields">
-                <label className="nd-f roster">
-                  <span>Roster</span>
-                  <input value={d.roster} onChange={(e) => edit(r.employee_id, 'roster', e.target.value)} onBlur={() => void flush()} autoCapitalize="words" />
-                </label>
                 <label className={'nd-f hours' + (bad ? ' bad' : '')}>
                   <span>Total Hrs.</span>
                   <input inputMode="decimal" placeholder="0" value={d.hours} onChange={(e) => edit(r.employee_id, 'hours', e.target.value)} onBlur={() => void flush()} aria-invalid={bad} />

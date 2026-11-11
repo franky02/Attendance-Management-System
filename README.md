@@ -81,11 +81,10 @@ The tab shows the totals on screen. **Download absentees statement** makes a one
 ## Night Duty (NDA statement)
 
 The **Night Duty** tab is per **calendar month**, separate from the muster's 16th–15th periods. Pick the month on the sideways-scrolling month strip; it opens on last month, because the hours are filled in after the month ends. For each person it records:
-- **Roster:** editable text, "Cont." by default
 - **Total Hrs.:** a number, decimals allowed (e.g. 48 or 7.5)
 - **Remarks:** free text
 
-**Weighted Hrs.** is Total Hrs. ÷ 6. The app works it out, so it isn't stored. Whole results print plain, others with 2 decimals (50 → 8.33).
+**Roster** always prints "Cont." on the PDF; there is nothing to enter for it. **Weighted Hrs.** is Total Hrs. ÷ 6. The app works it out, so it isn't stored. Whole results print plain, others with 2 decimals (50 → 8.33).
 
 Entries save automatically a moment after typing stops. They are kept on the phone until saved, and retried if saving fails.
 

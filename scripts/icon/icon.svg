@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- App icon: a train arriving at a platform under "AMS". Full-bleed square; the main art sits in the
+       central safe zone so Android's round/squircle masks never cut it. Render: scripts/icon/render.sh -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b1a60"/>
+      <stop offset="0.55" stop-color="#5b2c8f"/>
+      <stop offset="1" stop-color="#b5177f"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#e9e2f5"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4a2a78"/>
+      <stop offset="1" stop-color="#1f1033"/>
+    </linearGradient>
+    <linearGradient id="deck" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9d72d6"/>
+      <stop offset="1" stop-color="#d9c6f2"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffe9a8" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#sky)"/>
+
+  <!-- AMS (kept inside the circular safe zone) -->
+  <text x="256" y="172" text-anchor="middle" font-family="Avenir Next, Helvetica Neue, Arial, sans-serif"
+        font-weight="800" font-size="100" letter-spacing="8" fill="#ffffff">AMS</text>
+
+  <!-- Station canopy line -->
+  <rect x="128" y="196" width="256" height="5" rx="2.5" fill="#ffffff" fill-opacity="0.4"/>
+
+  <!-- Track bed -->
+  <polygon points="226,262 286,262 372,512 140,512" fill="#24113d" fill-opacity="0.55"/>
+  <!-- Platforms either side, in perspective: top surface, yellow safety edge, and the face toward the track -->
+  <polygon points="0,318 206,262 220,262 136,512 0,512" fill="url(#deck)"/>
+  <polygon points="512,318 306,262 292,262 376,512 512,512" fill="url(#deck)"/>
+  <polygon points="136,512 220,262 226,262 150,512" fill="#ffd34d"/>
+  <polygon points="376,512 292,262 286,262 362,512" fill="#ffd34d"/>
+  <polygon points="150,512 226,262 230,262 164,512" fill="#2a1446" fill-opacity="0.45"/>
+  <polygon points="362,512 286,262 282,262 348,512" fill="#2a1446" fill-opacity="0.45"/>
+
+  <!-- Rails -->
+  <path d="M244 262 L214 512 M268 262 L298 512" stroke="#d9cdee" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- Train, front view -->
+  <g>
+    <rect x="166" y="222" width="180" height="196" rx="40" fill="url(#body)"/>
+    <rect x="166" y="222" width="180" height="40" rx="20" fill="#ffffff"/>
+    <rect x="200" y="232" width="112" height="12" rx="6" fill="#b5177f"/>
+    <rect x="186" y="256" width="140" height="74" rx="18" fill="url(#glass)"/>
+    <path d="M198 270 L238 270 L214 318 L198 318 Z" fill="#ffffff" fill-opacity="0.16"/>
+    <rect x="166" y="342" width="180" height="12" fill="#b5177f"/>
+    <circle cx="204" cy="380" r="22" fill="url(#glow)"/>
+    <circle cx="308" cy="380" r="22" fill="url(#glow)"/>
+    <circle cx="204" cy="380" r="11" fill="#ffd34d"/>
+    <circle cx="308" cy="380" r="11" fill="#ffd34d"/>
+    <rect x="238" y="372" width="36" height="16" rx="4" fill="#5b2c8f"/>
+    <rect x="176" y="404" width="160" height="16" rx="8" fill="#2a1446"/>
+  </g>
+</svg>

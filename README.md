@@ -114,6 +114,10 @@ The **NH** tab works per calendar month: pick the month on the month strip. It o
 
 The magnifier buttons either side of the title make everything on the screen bigger or smaller, in five steps from 90% to 145%. The title and tab bar stay the same size. The choice is remembered on the phone (`src/zoom.ts`). When zoomed in, each Mark row puts the name on its own line with the P/A/R buttons underneath.
 
+## App icon
+
+The icon shows a train between two platforms, under "AMS". Its source is `scripts/icon/icon.svg`, and `scripts/icon/render.sh` turns it into `public/icon-*.png` (needs `brew install librsvg`). The main artwork stays inside the central safe area, so Android can crop it to a circle or squircle without cutting it off.
+
 ## How it behaves
 
 - **Mark:** one tap saves, and tapping the selected code again clears it. "Mark remaining Present" fills only blank cells. Its Undo, shown for 10 seconds, removes only the cells it filled. Rest days: tap **R** first, then use "Mark remaining Present".

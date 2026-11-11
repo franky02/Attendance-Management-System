@@ -1,6 +1,7 @@
 // A list that slides up from the bottom for choosing a code (leave types, or any code from the grid).
 // The phone's Back button closes it instead of leaving the app.
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import type { StatusCode } from './statusCodes'
 
 interface Props {
@@ -37,7 +38,8 @@ export function CodePicker({ title, subtitle, options, current, onPick, onClose 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  return (
+  // Drawn on the page itself (outside the zoomed screen area) so it always fits; it applies the zoom on its own.
+  return createPortal(
     <div className="sheet-backdrop" onClick={() => close()}>
       <div className="sheet" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="sheet-head">
@@ -69,5 +71,5 @@ export function CodePicker({ title, subtitle, options, current, onPick, onClose 
         </div>
       </div>
     </div>
-  )
+  , document.body)
 }

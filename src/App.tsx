@@ -9,6 +9,7 @@ import { AbsenteesScreen } from './AbsenteesScreen'
 import { NightDutyScreen } from './NightDutyScreen'
 import { NhScreen } from './NhScreen'
 import { useSaveState } from './saver'
+import { useZoom } from './zoom'
 
 type Tab = 'mark' | 'muster' | 'absentees' | 'night' | 'nh' | 'staff'
 
@@ -41,6 +42,8 @@ function Main() {
   const [tab, setTab] = useState<Tab>('mark')
   const [today, setToday] = useState(todayIST())
   const save = useSaveState()
+  const z = useZoom()
+  useEffect(() => { document.documentElement.style.setProperty('--z', String(z.zoom)) }, [z.zoom])
 
   // Roll over to the new day if the app is left open past midnight.
   useEffect(() => {
@@ -53,7 +56,15 @@ function Main() {
   return (
     <div className="app">
       <header className="top">
-        <div className="title"><AppName /></div>
+        <div className="top-row">
+          <button className="zoom-btn" onClick={z.zoomOut} disabled={!z.canOut} aria-label="Zoom out (smaller)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5L20 20M7.5 10.5h6" /></svg>
+          </button>
+          <div className="title"><AppName /></div>
+          <button className="zoom-btn" onClick={z.zoomIn} disabled={!z.canIn} aria-label="Zoom in (bigger)">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5L20 20M7.5 10.5h6M10.5 7.5v6" /></svg>
+          </button>
+        </div>
         <div className={'save-state ' + save.state}>
           {save.state === 'saving' && 'Saving…'}
           {save.state === 'saved' && '✓ Saved'}
@@ -61,7 +72,7 @@ function Main() {
         </div>
       </header>
       {db.demo && <div className="demo-bar">Demo mode: data is kept in this browser only.</div>}
-      <main>
+      <main style={{ zoom: z.zoom }}>
         {tab === 'mark' && <MarkScreen today={today} />}
         {tab === 'muster' && <MusterScreen today={today} />}
         {tab === 'absentees' && <AbsenteesScreen today={today} />}
@@ -83,7 +94,7 @@ function Main() {
 
 /** The app's name: Playfair Display, with "Ennore" in a Didone italic (fonts in public/fonts). */
 function AppName() {
-  return <>Muster Roll for <em>Ennore</em> Station</>
+  return <>Attendance Management System for <em>Ennore</em> Station</>
 }
 
 function Login() {

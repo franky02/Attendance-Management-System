@@ -1,6 +1,6 @@
 {
-  "name": "Muster Roll for Ennore Station",
-  "short_name": "Muster",
+  "name": "Attendance Management System for Ennore Station",
+  "short_name": "Attendance",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F2F3F5",

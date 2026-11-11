@@ -1,4 +1,6 @@
-# ENNORE Muster
+# Attendance Management System for Ennore Station
+
+(The project folder and code still call it ENNORE Muster.)
 
 A small attendance app for one user. Mark daily attendance for the station staff, then download a muster PDF for each period. A period runs from the 16th to the 15th.
 
@@ -105,6 +107,10 @@ The **NH** tab works per calendar month: pick the month on the month strip. It o
   - **Blank:** "Not marked" (grey). It isn't counted, and the app warns before downloading.
 - **NHA column:** the number of eligible NH days, printed as "03", or "--" for none.
 - **PDF:** **Download NHA statement** makes a US Letter PDF (`src/nhaPdf.ts`) based on `reference/NHA-Statement-JANUARY-2026-3-colmn.pdf`. It has one column per NH date, with its name underneath, and a numbered spare row. When the month has a single NH, a **Remarks** column is added (Present / Rest / CR / NH Availed / the leave code), as in `reference/NHA-Statement-SEPTEMBER-2026.pdf`.
+
+## Zoom
+
+The magnifier buttons either side of the title make everything on the screen bigger or smaller, in five steps from 90% to 145%. The title and tab bar stay the same size. The choice is remembered on the phone (`src/zoom.ts`). When zoomed in, each Mark row puts the name on its own line with the P/A/R buttons underneath.
 
 ## How it behaves
 

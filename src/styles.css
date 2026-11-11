@@ -113,20 +113,22 @@ main { flex: 1; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 .date-big { font-size: 19px; font-weight: 500; letter-spacing: -0.01em; margin-top: 2px; }
 .today-tag { margin-left: 8px; font-size: 11px; font-weight: 600; background: var(--magenta); color: #fff; border-radius: 999px; padding: 2px 8px; vertical-align: 2px; }
 .link-btn { display: block; margin: 2px auto 0; border: 0; background: none; color: var(--magenta); min-height: 40px; font-size: 13px; font-weight: 600; }
-.counts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0 14px; }
+.counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 8px; margin: 12px 0 14px; }
 .count { background: var(--card); border-radius: 12px; padding: 8px 10px 9px; }
 .count span { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; }
 .count b { display: block; font-size: 22px; font-weight: 500; line-height: 1.2; color: var(--c, var(--brand)); }
 .mark-list { background: var(--card); border-radius: var(--radius); overflow: hidden; }
-.mark-row { display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 14px; }
+.mark-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 10px 10px 14px; }
 .mark-row + .mark-row { border-top: 1px solid var(--hair); }
 .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--c); }
 .mark-row.blank .dot { background: none; box-shadow: inset 0 0 0 1.75px #b7b3c0; }
 .who { flex: 1; min-width: 0; }
+/* When zoomed in and space runs out, the buttons drop below the name instead of squeezing it. */
+.mark-row .who { min-width: 110px; }
 .name { font-weight: 500; font-size: 15px; overflow-wrap: anywhere; line-height: 1.3; }
 .who .muted { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 1px; }
 .staff-row .who .muted { text-transform: none; letter-spacing: 0; font-size: 12px; }
-.codes { display: flex; gap: 6px; }
+.codes { display: flex; gap: 6px; margin-left: auto; }
 .code-btn {
   transition: background-color 60ms, color 60ms;
   width: 48px; height: 48px; border-radius: 14px;
@@ -221,7 +223,9 @@ main { flex: 1; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
   animation: fade 120ms ease-out;
 }
 .sheet {
-  width: 100%; max-width: 560px; max-height: 85dvh; display: flex; flex-direction: column;
+  /* Follows the app zoom (--z), sized so it still fits the screen. */
+  zoom: var(--z, 1);
+  width: calc(100% / var(--z, 1)); max-width: 560px; max-height: calc(85dvh / var(--z, 1)); display: flex; flex-direction: column;
   background: var(--card); border-radius: 20px 20px 0 0; padding-bottom: env(safe-area-inset-bottom);
   animation: rise 160ms ease-out;
 }
@@ -251,7 +255,7 @@ main { flex: 1; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
 /* Absentees */
-.abs-wrap { background: var(--card); border-radius: var(--radius); overflow: hidden; margin: 10px 0 4px; padding: 0 4px; }
+.abs-wrap { background: var(--card); border-radius: var(--radius); overflow-x: auto; margin: 10px 0 4px; padding: 0 4px; }
 .abs-table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
 .abs-table th, .abs-table td { padding: 0 8px; height: 46px; border-bottom: 1px solid var(--hair); text-align: center; }
 .abs-table th { height: 44px; border-bottom-color: var(--line); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
@@ -329,3 +333,13 @@ main { flex: 1; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 .nh-tag { display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 600; color: var(--err); background: var(--err-bg); border-radius: 999px; padding: 2px 10px; }
 .grid th.nh small { color: var(--err); font-weight: 700; }
 .grid th.nh { box-shadow: inset 0 -3px 0 var(--err); }
+
+/* Header: zoom buttons either side of the title */
+.top-row { display: flex; align-items: center; gap: 6px; width: 100%; max-width: 760px; }
+.top-row .title { flex: 1; text-wrap: balance; }
+.zoom-btn {
+  flex: none; width: 44px; height: 44px; border: 0; border-radius: 50%;
+  background: var(--brand-soft); color: var(--brand); display: grid; place-items: center;
+}
+.zoom-btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.zoom-btn:disabled { opacity: 0.35; }

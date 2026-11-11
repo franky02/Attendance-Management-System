@@ -2,16 +2,16 @@
 // It is the only place the app code reads the staff list, so real builds never contain it.
 import type { Db } from './db'
 import { SEED_STAFF } from './seed'
-import type { AttendanceRow, Employee, NightDutyRow, PeriodRow } from './types'
+import type { AttendanceRow, Employee, Holiday, NightDutyRow, PeriodRow } from './types'
 
 // Demo mode: used when no Supabase settings are present. Data stays in this browser only.
 const LS = 'ennore-muster-demo'
-interface DemoState { employee: Employee[]; period: PeriodRow[]; attendance: AttendanceRow[]; night_duty: NightDutyRow[] }
+interface DemoState { employee: Employee[]; period: PeriodRow[]; attendance: AttendanceRow[]; night_duty: NightDutyRow[]; national_holiday: Holiday[] }
 
 function demoLoad(): DemoState {
   try {
     const s = localStorage.getItem(LS)
-    if (s) return { night_duty: [], ...JSON.parse(s) }
+    if (s) return { night_duty: [], national_holiday: [], ...JSON.parse(s) }
   } catch { /* ignore */ }
   return {
     employee: SEED_STAFF.map(([full_name, designation, pf_hrms_number, code], i) => ({
@@ -20,6 +20,7 @@ function demoLoad(): DemoState {
     period: [],
     attendance: [],
     night_duty: [],
+    national_holiday: [],
   }
 }
 
@@ -72,6 +73,17 @@ export const demoDb = (): Db => {
       const k = (r: NightDutyRow) => r.period_start + '|' + r.employee_id
       const incoming = new Set(rows.map(k))
       st.night_duty = st.night_duty.filter((r) => !incoming.has(k(r))).concat(clone(rows))
+      save()
+    },
+    async getHolidays() { return clone([...st.national_holiday].sort((a, b) => a.holiday_date.localeCompare(b.holiday_date))) },
+    async saveHoliday(h) {
+      await delay()
+      st.national_holiday = st.national_holiday.filter((x) => x.holiday_date !== h.holiday_date).concat(clone(h))
+      save()
+    },
+    async deleteHoliday(date) {
+      await delay()
+      st.national_holiday = st.national_holiday.filter((x) => x.holiday_date !== date)
       save()
     },
     async exportAll() { return clone(st) },

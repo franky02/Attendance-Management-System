@@ -5,6 +5,7 @@ import { PDFDocument } from 'pdf-lib'
 import { buildMusterPdf, FONT_FILES, type FontBytes } from '../src/pdf'
 import { buildAbsenteesPdf } from '../src/absenteesPdf'
 import { buildNdaPdf } from '../src/ndaPdf'
+import { buildNhaPdf } from '../src/nhaPdf'
 import { SEED_STAFF } from '../src/seed'
 import { periodDates } from '../src/dates'
 import { key, type Marks, type RosterEntry } from '../src/types'
@@ -67,6 +68,32 @@ const p3 = ov3.addPage([ref3.width, ref3.height])
 p3.drawPage(ref3)
 p3.drawPage(mine3, { opacity: 0.5 })
 writeFileSync('out/overlay-nda.pdf', await ov3.save())
+// NHA statements: January-like (3 NHs) and September-like (1 NH, with Remarks), with overlays.
+const nhMarks: Marks = {}
+const janDates = ['2026-01-01', '2026-01-15', '2026-01-26']
+roster.forEach((r, i) => {
+  nhMarks[key(r.employee_id, '2026-01-01')] = 'P'
+  nhMarks[key(r.employee_id, '2026-01-15')] = [6, 8, 11, 13].includes(i) ? 'NH' : i === 2 ? 'R' : 'P'
+  nhMarks[key(r.employee_id, '2026-01-26')] = i === 15 ? 'LAP' : i === 4 ? 'CR' : 'P'
+  nhMarks[key(r.employee_id, '2026-09-14')] = i === 2 ? 'LAP' : [10, 12].includes(i) ? 'NH' : i === 5 ? undefined as unknown as string : 'P'
+})
+delete nhMarks[key(roster[5].employee_id, '2026-09-14')]
+const janHol = janDates.map((d, i) => ({ holiday_date: d, name: ['New Year', 'Pongal', 'Republic Day'][i] }))
+for (const [name, month, hols, ref] of [
+  ['jan', '2026-01-01', janHol, 'reference/NHA-Statement-JANUARY-2026-3-colmn.pdf'],
+  ['sep', '2026-09-01', [{ holiday_date: '2026-09-14', name: '' }], 'reference/NHA-Statement-SEPTEMBER-2026.pdf'],
+] as const) {
+  const bytes = await buildNhaPdf({ month, holidays: [...hols], roster, marks: nhMarks, fonts })
+  writeFileSync(`out/sample-nha-${name}.pdf`, bytes)
+  const ov = await PDFDocument.create()
+  const [rp] = await ov.embedPdf(readFileSync(ref))
+  const [mp] = await ov.embedPdf(bytes)
+  const pg = ov.addPage([rp.width, rp.height])
+  pg.drawPage(rp)
+  pg.drawPage(mp, { opacity: 0.5 })
+  writeFileSync(`out/overlay-nha-${name}.pdf`, await ov.save())
+}
+console.log('wrote out/sample-nha-jan.pdf, out/sample-nha-sep.pdf and overlays')
 console.log('wrote out/sample-nda.pdf, out/overlay-nda.pdf')
 console.log('wrote out/sample-absentees.pdf, out/overlay-absentees.pdf')
 console.log('wrote out/sample-final.pdf, out/sample-interim.pdf, out/overlay.pdf')

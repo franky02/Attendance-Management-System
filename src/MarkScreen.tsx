@@ -3,11 +3,13 @@ import { addDays, friendlyDate, periodFor, periodLabel, shiftPeriod } from './da
 import { countUnmarked, downloadFinal, preloadPdf } from './data'
 import { saveMark } from './saver'
 import { CodePicker } from './CodePicker'
+import { useHolidays } from './holidays'
 import { ABSENT_CODES, kindOf, statusColor, statusOf, type Kind } from './statusCodes'
 import { loadPeriod, refreshMeta, useStore, usePeriodData } from './store'
 import { key, type PeriodRow } from './types'
 
 export function MarkScreen({ today }: { today: string }) {
+  const holidays = useHolidays()
   const [date, setDate] = useState(today)
   const { start } = periodFor(date)
   const data = usePeriodData(start)
@@ -64,6 +66,7 @@ export function MarkScreen({ today }: { today: string }) {
         <div className="date-mid">
           <div className="eyebrow">Period {periodLabel(start)}</div>
           <div className="date-big">{friendlyDate(date)}{date === today && <span className="today-tag">Today</span>}</div>
+          {holidays.byDate.has(date) && <div className="nh-tag">National Holiday{holidays.byDate.get(date) ? ` · ${holidays.byDate.get(date)}` : ''}</div>}
         </div>
         <button className="arrow" aria-label="Next day" disabled={date >= today} onClick={() => setDate(addDays(date, 1))}>›</button>
       </div>

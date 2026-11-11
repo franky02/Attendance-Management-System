@@ -34,6 +34,11 @@ export interface NightDutyRow {
   updated_at?: string
 }
 
+export interface Holiday {
+  holiday_date: string
+  name: string
+}
+
 export interface AttendanceRow {
   employee_id: string
   att_date: string

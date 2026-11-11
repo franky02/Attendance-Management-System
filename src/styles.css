@@ -69,14 +69,14 @@ main { flex: 1; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 /* Bottom tab bar */
 .tabs {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
-  display: grid; grid-template-columns: repeat(5, 1fr);
+  display: grid; grid-template-columns: repeat(6, 1fr);
   background: var(--card); border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom);
 }
 .tabs button {
   min-height: 60px; border: 0; background: none; padding: 6px 2px 8px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-  font-size: 12px; font-weight: 500; color: var(--faint);
+  font-size: 11px; font-weight: 500; color: var(--faint); white-space: nowrap; letter-spacing: -0.01em;
 }
 .tabs button:active { transform: none; }
 .tabs svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
@@ -309,3 +309,23 @@ main { flex: 1; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
 .month-chip.on { background: var(--brand); color: #fff; box-shadow: 0 6px 14px -6px rgba(91, 44, 143, 0.6); }
 .month-chip.on small { color: rgba(255, 255, 255, 0.8); }
 .nd-month { margin: 6px 2px 0; }
+
+/* NH */
+.nh-box { background: var(--card); border-radius: var(--radius); padding: 12px 14px 4px; margin: 8px 0 12px; }
+.nh-item { display: flex; align-items: center; gap: 10px; min-height: 48px; border-bottom: 1px solid var(--hair); }
+.nh-date { font-weight: 700; color: var(--err); min-width: 56px; }
+.nh-name { flex: 1; }
+.nh-x { width: 44px; height: 44px; border: 0; border-radius: 50%; background: var(--err-bg); color: var(--err); font-size: 14px; }
+.nh-add { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.nh-e { color: #0090c8; }
+.nh-n { color: var(--err); }
+.nh-table th { white-space: nowrap; }
+.nh-cell { font-size: 12px; font-weight: 700; line-height: 1.2; }
+.nh-cell small { display: block; font-size: 10px; font-weight: 500; color: var(--muted); }
+.nh-cell.eligible { color: #0090c8; }
+.nh-cell.ineligible { color: var(--err); }
+.nh-cell.unmarked { color: var(--faint); font-weight: 500; }
+.nh-count { font-weight: 800; font-variant-numeric: tabular-nums; }
+.nh-tag { display: inline-block; margin-top: 4px; font-size: 12px; font-weight: 600; color: var(--err); background: var(--err-bg); border-radius: 999px; padding: 2px 10px; }
+.grid th.nh small { color: var(--err); font-weight: 700; }
+.grid th.nh { box-shadow: inset 0 -3px 0 var(--err); }

@@ -35,6 +35,7 @@ export const LEAVE_TYPES: [code: string, label: string][] = [
   ['CR', 'Compensatory Rest'],
   ['S', 'Sick Leave'],
   ['PME', 'Periodical Medical Examination'],
+  ['NH', 'National Holiday availed'],
 ]
 
 export const STATUS_CODES: StatusCode[] = [

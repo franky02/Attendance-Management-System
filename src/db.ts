@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { periodFor } from './dates'
 import { demoDb } from './demoDb'
-import type { AttendanceRow, NightDutyRow, Employee, PeriodRow, RosterEntry } from './types'
+import type { AttendanceRow, Holiday, NightDutyRow, Employee, PeriodRow, RosterEntry } from './types'
 
 export interface Db {
   demo: boolean
@@ -18,7 +18,10 @@ export interface Db {
   deleteMarks(rows: { employee_id: string; att_date: string }[]): Promise<void>
   getNightDuty(periodStart: string): Promise<NightDutyRow[]>
   upsertNightDuty(rows: NightDutyRow[]): Promise<void>
-  exportAll(): Promise<{ employee: Employee[]; period: PeriodRow[]; attendance: AttendanceRow[]; night_duty: NightDutyRow[] }>
+  getHolidays(): Promise<Holiday[]>
+  saveHoliday(h: Holiday): Promise<void>
+  deleteHoliday(date: string): Promise<void>
+  exportAll(): Promise<{ employee: Employee[]; period: PeriodRow[]; attendance: AttendanceRow[]; night_duty: NightDutyRow[]; national_holiday: Holiday[] }>
 }
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
@@ -81,13 +84,23 @@ const supabaseDb = (sb: SupabaseClient): Db => ({
     const stamped = rows.map((r) => ({ ...r, updated_at: new Date().toISOString() }))
     check(await sb.from('night_duty').upsert(stamped, { onConflict: 'period_start,employee_id' }))
   },
+  async getHolidays() {
+    return check(await sb.from('national_holiday').select('holiday_date,name').order('holiday_date')) as Holiday[]
+  },
+  async saveHoliday(h) {
+    check(await sb.from('national_holiday').upsert(h, { onConflict: 'holiday_date' }))
+  },
+  async deleteHoliday(date) {
+    check(await sb.from('national_holiday').delete().eq('holiday_date', date))
+  },
   async exportAll() {
-    const [employee, period, night_duty] = await Promise.all([
+    const [employee, period, night_duty, national_holiday] = await Promise.all([
       this.getEmployees(), this.getPeriods(),
       sb.from('night_duty').select('*').order('period_start').then((r) => check(r) as NightDutyRow[]),
+      this.getHolidays(),
     ])
     const attendance = await this.getAttendance('1900-01-01', '9999-12-31')
-    return { employee, period, attendance, night_duty }
+    return { employee, period, attendance, night_duty, national_holiday }
   },
 })
 

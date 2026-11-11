@@ -92,6 +92,20 @@ Entries save automatically a moment after typing stops. They are kept on the pho
 
 The data lives in the `night_duty` table (`supabase/migrations/0002_night_duty.sql`). Its `period_start` column holds the month's 1st day (`0003_night_duty_calendar_month.sql`).
 
+## National holidays and the NHA statement
+
+The **NH** tab works per calendar month: pick the month on the month strip. It opens on last month.
+
+- **NH dates:** under "National holidays this month", add each NH date, with an optional name such as "Republic Day". You can also remove one. Dates are stored in the `national_holiday` table (`supabase/migrations/0004_national_holiday.sql`).
+- **In the muster:** NH days show a red "National Holiday" tag on the Mark screen and an "NH" label on the Muster grid's date column.
+- **NH code:** **NH (National Holiday availed)** is in the A list. Mark it when someone takes the holiday off.
+- **Eligibility**, worked out from the muster marks on each NH date (`src/nha.ts`):
+  - **P, R or CR:** Eligible (printed sky blue).
+  - **NH, A or any other leave:** Not Eligible (printed red).
+  - **Blank:** "Not marked" (grey). It isn't counted, and the app warns before downloading.
+- **NHA column:** the number of eligible NH days, printed as "03", or "--" for none.
+- **PDF:** **Download NHA statement** makes a US Letter PDF (`src/nhaPdf.ts`) based on `reference/NHA-Statement-JANUARY-2026-3-colmn.pdf`. It has one column per NH date, with its name underneath, and a numbered spare row. When the month has a single NH, a **Remarks** column is added (Present / Rest / CR / NH Availed / the leave code), as in `reference/NHA-Statement-SEPTEMBER-2026.pdf`.
+
 ## How it behaves
 
 - **Mark:** one tap saves, and tapping the selected code again clears it. "Mark remaining Present" fills only blank cells. Its Undo, shown for 10 seconds, removes only the cells it filled. Rest days: tap **R** first, then use "Mark remaining Present".

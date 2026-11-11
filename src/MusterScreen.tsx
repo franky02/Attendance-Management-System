@@ -5,6 +5,7 @@ import { countUnmarked, downloadFinal, downloadInterim, preloadPdf } from './dat
 import { usePeriodData } from './store'
 import { saveMark } from './saver'
 import { CodePicker } from './CodePicker'
+import { useHolidays } from './holidays'
 import { STATUS_CODES, statusColor, statusOf } from './statusCodes'
 import { key } from './types'
 
@@ -13,6 +14,7 @@ const isSunday = (date: string) => weekday(date) === 0
 const weekdayLetter = (date: string) => ['Su', 'M', 'T', 'W', 'Th', 'F', 'Sa'][weekday(date)]
 
 export function MusterScreen({ today }: { today: string }) {
+  const holidays = useHolidays()
   const current = periodFor(today).start
   const [start, setStart] = useState(current)
   const data = usePeriodData(start)
@@ -104,8 +106,8 @@ export function MusterScreen({ today }: { today: string }) {
               <th>Des.</th>
               <th>PF / HRMS</th>
               {cols.map((c, i) => (
-                <th key={i} data-date={c.date ?? undefined} className={'day' + (i === 16 ? ' divider' : '') + (c.date === today ? ' today' : '') + (c.date && isSunday(c.date) ? ' sun' : '')}>
-                  {c.label}{c.date && <small>{weekdayLetter(c.date)}</small>}
+                <th key={i} data-date={c.date ?? undefined} className={'day' + (i === 16 ? ' divider' : '') + (c.date === today ? ' today' : '') + (c.date && isSunday(c.date) ? ' sun' : '') + (c.date && holidays.byDate.has(c.date) ? ' nh' : '')} title={c.date && holidays.byDate.has(c.date) ? `National Holiday${holidays.byDate.get(c.date) ? ': ' + holidays.byDate.get(c.date) : ''}` : undefined}>
+                  {c.label}{c.date && <small>{c.date && holidays.byDate.has(c.date) ? 'NH' : weekdayLetter(c.date)}</small>}
                 </th>
               ))}
             </tr>

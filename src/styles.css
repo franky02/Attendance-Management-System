@@ -183,10 +183,10 @@ main { flex: 1; padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
   font-size: 15px; font-weight: 700; color: var(--c);
   background: color-mix(in srgb, var(--c) 9%, #fff);
 }
-/* Sundays: dark yellow date heading, light yellow column (Muster grid only). */
-.grid th.sun { background: #b8860b; color: #fff; }
+/* Sundays: grey date heading, light grey column (Muster grid only). */
+.grid th.sun { background: #7d7a85; color: #fff; }
 .grid th.sun small { color: rgba(255, 255, 255, 0.85); }
-.grid .cell.sun { background: #fbefc4; }
+.grid .cell.sun { background: #eeedf1; }
 .grid .cell.today-col { background: #fdf4fa; }
 .grid td.cell:not(.locked):not(.future):active { background: var(--brand-soft); }
 .grid .cell.future, .grid .cell.locked { cursor: default; }
